@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal - SMB International</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: { colors: { smb: { blue: '#0b1136', gold: '#b45309' } } }
+            }
+        }
+    </script>
+    <style>
+        :root { --smb-blue: #0b1136; --smb-gold: #b45309; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        /* Form Inputs */
+        .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #d1d5db; outline: none; transition: 0.2s; background-color: #f9fafb; color: #111827; }
+        .form-input:focus { border-color: var(--smb-blue); box-shadow: 0 0 0 3px rgba(11, 17, 54, 0.1); background-color: #ffffff; }
+        .dark .form-input { background-color: #1e293b; border-color: #334155; color: white; }
+        .dark .form-input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2); }
+        
+        /* Radio Cards */
+        .radio-card { display: flex; align-items: center; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; transition: 0.2s; background-color: #f9fafb; margin-bottom: 0.5rem; color: #374151; }
+        .dark .radio-card { background-color: #1e293b; border-color: #334155; color: #cbd5e1; }
+        input[type="radio"]:checked + .radio-card { border-color: var(--smb-blue); background-color: #ebf0f9; font-weight: 600; color: var(--smb-blue); }
+        .dark input[type="radio"]:checked + .radio-card { border-color: #60a5fa; background-color: rgba(96, 165, 250, 0.1); color: #60a5fa; }
+        
+        /* Country Select Cards */
+        .country-select-card { border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; cursor: pointer; transition: all 0.2s; background-color: #ffffff; }
+        .dark .country-select-card { background-color: #1e293b; border-color: #334155; }
+        .country-select-card:hover { border-color: var(--smb-blue); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .dark .country-select-card:hover { border-color: #60a5fa; }
+        .country-select-card.selected { border-color: var(--smb-blue); box-shadow: 0 0 0 2px var(--smb-blue); background-color: #f8fafc; }
+        .dark .country-select-card.selected { border-color: #60a5fa; box-shadow: 0 0 0 2px #60a5fa; background-color: rgba(96, 165, 250, 0.1); }
+        
+        /* Step Indicators */
+        .step-indicator { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #d1d5db; color: #9ca3af; background-color: white; }
+        .dark .step-indicator { background-color: #1e293b; border-color: #475569; }
+        .step-indicator.active { border-color: #10b981; color: #10b981; background-color: #ecfdf5; }
+        .dark .step-indicator.active { background-color: rgba(16, 185, 129, 0.1); }
+        .step-indicator.completed { border-color: #10b981; background-color: #10b981; color: white; }
+        .step-line { flex-grow: 1; height: 2px; background-color: #e5e7eb; margin: 0 10px; }
+        .dark .step-line { background-color: #334155; }
+        .step-line.active { background-color: #10b981; }
+
+        .assessment-step { display: none; }
+        .assessment-step.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="py-6 md:py-10 px-4 bg-gray-50 dark:bg-slate-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    
+    <!-- Top Bar -->
+    <div class="max-w-5xl mx-auto mb-8 flex justify-between items-center">
+        <a href="index.html" class="text-gray-500 dark:text-gray-400 font-bold hover:text-smb-blue dark:hover:text-blue-400 transition"><i class="fas fa-arrow-left"></i> Main Site</a>
+        <div class="flex gap-4 items-center">
+            <button onclick="toggleDarkMode()" class="bg-white dark:bg-slate-800 p-2.5 rounded-full border border-gray-200 dark:border-slate-700 shadow-sm text-gray-500 dark:text-gray-400 hover:text-smb-blue dark:hover:text-blue-400 transition">
+                <i id="theme-icon" class="fas fa-moon w-5 h-5 flex items-center justify-center"></i>
+            </button>
+            <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" class="h-10 dark:brightness-0 dark:invert transition-all" alt="SMB Logo">
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div id="portal-card" class="max-w-5xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700 transition-colors duration-300">
+        
+        <!-- LOGIN VIEW (Hidden by Default) -->
+        <div id="login-container" style="display: none;" class="p-8 md:p-16 max-w-lg mx-auto w-full">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-smb-blue dark:text-blue-400 text-3xl">
+                    <i class="fas fa-user-lock"></i>
+                </div>
+                <h2 class="text-3xl font-black text-smb-blue dark:text-white">Client Login</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Access your saved visa application profile</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tracking ID or Email</label>
+                    <input type="text" required class="form-input" placeholder="SMB-XXXXXX or Email">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Password</label>
+                    <input type="password" required class="form-input" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-smb-blue hover:bg-blue-900 text-white py-3.5 rounded-xl font-bold transition shadow-lg mt-4">
+                    Secure Login
+                </button>
+                <div class="text-center mt-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">No account yet? <br> 
+                        <button type="button" onclick="toggleAuth('register')" class="text-smb-gold dark:text-amber-500 font-bold hover:underline mt-2">Take the Free Risk Assessment</button>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- ASSESSMENT / REGISTRATION VIEW -->
+        <div id="register-container">
+            <div class="bg-smb-blue dark:bg-slate-900 text-white p-6 md:p-8 text-center border-b-4 border-smb-gold dark:border-amber-500">
+                <h2 class="text-2xl md:text-3xl font-black tracking-wide">Visa Eligibility Assessment</h2>
+                <p class="text-blue-200 mt-2 text-sm max-w-2xl mx-auto">Find out if you qualify for immigration pathways in minutes.</p>
+            </div>
+
+            <!-- Progress Bar (Hidden on Step 0 and 5) -->
+            <div id="step-indicators" class="px-8 py-6 flex justify-center items-center max-w-3xl mx-auto hidden border-b border-gray-100 dark:border-slate-700">
+                <div class="flex items-center w-full">
+                    <div class="flex flex-col items-center">
+                        <div class="step-indicator" id="ind-1">1</div>
+                        <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase tracking-wider hidden sm:block">Info</span>
+                    </div>
+                    <div class="step-line" id="line-1"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="step-indicator" id="ind-2">2</div>
+                        <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase tracking-wider hidden sm:block">Country</span>
+                    </div>
+                    <div class="step-line" id="line-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="step-indicator" id="ind-3">3</div>
+                        <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase tracking-wider hidden sm:block text-center">Specifics</span>
+                    </div>
+                    <div class="step-line" id="line-3"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="step-indicator" id="ind-4">4</div>
+                        <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-2 font-bold uppercase tracking-wider hidden sm:block">General</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questionnaire Content -->
+            <div class="p-6 md:p-12">
+                
+                <!-- STEP 0: Intro -->
+                <div id="step-0" class="assessment-step active text-center py-10">
+                    <div class="w-24 h-24 bg-orange-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6 text-smb-gold dark:text-amber-500 text-4xl">
+                        <i class="fas fa-plane-departure"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-[#0b1136] dark:text-white mb-4">Ready to build your future?</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed text-lg">
+                        This comprehensive questionnaire will analyze your current situation and capabilities to calculate your personalized <b>Points-Based Visa Eligibility Score</b>.
+                    </p>
+                    <button onclick="goToStep(1)" class="bg-smb-blue hover:bg-blue-900 text-white px-12 py-4 rounded-full font-black tracking-widest uppercase transition shadow-lg shadow-blue-900/20">
+                        Start Assessment
+                    </button>
+                    <div class="mt-10 pt-8 border-t border-gray-100 dark:border-slate-700">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Already took the assessment?</p>
+                        <button onclick="toggleAuth('login')" class="text-sm border-2 border-smb-blue dark:border-blue-400 text-smb-blue dark:text-blue-400 px-8 py-2.5 rounded-full font-bold hover:bg-blue-50 dark:hover:bg-slate-700 transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Client Login
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 1: Personal Info -->
+                <div id="step-1" class="assessment-step">
+                    <h3 class="text-2xl font-black text-center text-smb-blue dark:text-white mb-8">Tell us about yourself</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">First Name *</label><input type="text" id="fname" class="form-input"></div>
+                        <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Last Name *</label><input type="text" id="lname" class="form-input"></div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Email *</label>
+                            <input type="email" id="email" class="form-input" oninput="validateEmail(this)">
+                            <p id="email-error" class="text-xs text-red-500 font-bold mt-1 hidden"></p>
+                        </div>
+                        <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Contact No. *</label><input type="tel" id="phone" class="form-input" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" placeholder="+63 9xx xxx xxxx"></div>
+                        <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Current Job Title *</label><input type="text" id="work" class="form-input" placeholder="e.g. Registered Nurse"></div>
+                        <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">City/Province *</label><input type="text" id="city" class="form-input"></div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Civil Status *</label>
+                            <select id="civil" class="form-input"><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">How did you find us? *</label>
+                            <select id="referral" class="form-input"><option>Social Media</option><option>Friend/Relative</option><option>Google Search</option><option>Event</option></select>
+                        </div>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-gray-100 dark:border-slate-700">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" id="terms" class="w-5 h-5 text-smb-blue rounded border-gray-300 focus:ring-smb-blue"> 
+                            <span class="text-sm font-medium text-gray-600 dark:text-gray-300">I agree to the <a href="#" class="text-smb-blue dark:text-blue-400 hover:underline">Terms & Conditions</a> and Data Privacy Policy. *</span>
+                        </label>
+                    </div>
+                    <div class="mt-10 flex justify-between items-center">
+                        <button onclick="goToStep(0)" class="text-sm font-bold text-gray-500 hover:text-smb-blue dark:hover:text-blue-400 px-6 py-2 transition"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                        <button onclick="goToStep(2, true)" class="bg-smb-blue hover:bg-blue-900 text-white px-8 py-3 rounded-full font-bold transition shadow-md">NEXT STEP <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Country Selection -->
+                <div id="step-2" class="assessment-step">
+                    <h3 class="text-2xl font-black text-center text-smb-blue dark:text-white mb-2">Select your destination</h3>
+                    <p class="text-center text-gray-500 dark:text-gray-400 mb-8">Where are you planning to migrate, study, or work?</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="country-selection-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                    
+                    <div class="mt-10 flex justify-between items-center pt-6 border-t border-gray-100 dark:border-slate-700">
+                        <button onclick="goToStep(1)" class="text-sm font-bold text-gray-500 hover:text-smb-blue dark:hover:text-blue-400 px-6 py-2 transition"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                        <button onclick="goToStep(3)" class="bg-smb-blue hover:bg-blue-900 text-white px-8 py-3 rounded-full font-bold transition shadow-md">NEXT STEP <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Dynamic Country Questions -->
+                <div id="step-3" class="assessment-step">
+                    <h3 class="text-2xl font-black text-center text-smb-blue dark:text-white mb-2" id="step3-title">Excellent choice!</h3>
+                    <p class="text-center text-gray-500 dark:text-gray-400 mb-8 text-sm" id="step3-subtitle">We'll ask specific questions based on immigration rules.</p>
+                    
+                    <div class="space-y-6" id="dynamic-step3-questions">
+                        <!-- Injected via JS -->
+                    </div>
+                    
+                    <div class="mt-10 flex justify-between items-center pt-6 border-t border-gray-100 dark:border-slate-700">
+                        <button onclick="goToStep(2)" class="text-sm font-bold text-gray-500 hover:text-smb-blue dark:hover:text-blue-400 px-6 py-2 transition"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                        <button onclick="goToStep(4)" class="bg-smb-blue hover:bg-blue-900 text-white px-8 py-3 rounded-full font-bold transition shadow-md">NEXT STEP <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: General Questions & Finish -->
+                <div id="step-4" class="assessment-step">
+                    <h3 class="text-2xl font-black text-center text-smb-blue dark:text-white mb-8">Finalizing your profile</h3>
+                    
+                    <div class="space-y-6" id="dynamic-step4-questions">
+                        <!-- Injected via JS -->
+                    </div>
+
+                    <div class="bg-blue-50 dark:bg-slate-700/50 p-6 md:p-8 rounded-2xl border border-blue-100 dark:border-slate-600 mt-8">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-smb-blue rounded-full text-white flex items-center justify-center flex-shrink-0"><i class="fas fa-lock"></i></div>
+                            <div class="w-full">
+                                <p class="font-black text-smb-blue dark:text-white mb-1">Create Account Password</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Set a password to securely access your score and track your application later.</p>
+                                <input type="password" id="reg-password" class="form-input max-w-md" placeholder="Enter secure password">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-between items-center pt-6 border-t border-gray-100 dark:border-slate-700">
+                        <button onclick="goToStep(3)" class="text-sm font-bold text-gray-500 hover:text-smb-blue dark:hover:text-blue-400 px-6 py-2 transition"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                        <button onclick="completeAssessment()" class="bg-smb-gold hover:bg-amber-700 text-white px-10 py-4 rounded-full font-black tracking-widest uppercase transition shadow-xl">SUBMIT ASSESSMENT</button>
+                    </div>
+                </div>
+
+                <!-- STEP 5: Success -->
+                <div id="step-5" class="assessment-step text-center py-10 md:py-16">
+                    <div class="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-check text-5xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-[#0b1136] dark:text-white mb-4">Assessment Complete!</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto text-lg">Your responses have been analyzed. Your unique applicant profile and Eligibility Score are ready.</p>
+                    
+                    <button onclick="goToDashboard()" class="bg-smb-blue hover:bg-blue-900 text-white px-12 py-4 rounded-full font-black uppercase tracking-widest transition shadow-lg animate-pulse">
+                        View My Score
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DASHBOARD VIEW (Client results view) -->
+        <div id="dashboard-view" style="display: none;" class="p-6 md:p-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-smb-blue dark:text-white">My Dashboard</h2>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mt-1">Application Overview & Results</p>
+                </div>
+                <button onclick="location.reload()" class="text-sm font-bold border border-red-200 text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:border-red-500/20 px-4 py-2 rounded-lg transition">Secure Logout</button>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
+                <!-- User Card -->
+                <div class="bg-white dark:bg-slate-700 rounded-3xl p-8 shadow-sm border-t-8 border-smb-gold flex flex-col items-center justify-center text-center">
+                    <div class="w-24 h-24 bg-blue-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-3xl font-black text-smb-blue dark:text-blue-400 mb-4" id="dash-initials">JD</div>
+                    <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-1" id="dash-name">Juan Dela Cruz</h3>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-8">Registered Client</p>
+                    
+                    <div class="bg-gray-50 dark:bg-slate-800 w-full p-5 rounded-2xl border border-gray-100 dark:border-slate-600">
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1 font-bold uppercase tracking-widest">Tracking ID</p>
+                        <p class="text-xl md:text-2xl font-mono font-black text-smb-blue dark:text-white" id="dash-id">SMB-XXXXXX</p>
+                    </div>
+                </div>
+
+                <!-- Score Card -->
+                <div class="lg:col-span-2 bg-smb-blue rounded-3xl p-8 md:p-10 shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+                    <div class="absolute left-0 bottom-0 w-48 h-48 bg-smb-gold/10 rounded-full -ml-20 -mb-20 pointer-events-none"></div>
+                    
+                    <h3 class="text-xs md:text-sm font-bold text-blue-300 uppercase tracking-widest mb-6 relative z-10">System Assessment Result</h3>
+                    
+                    <div class="flex items-end gap-4 md:gap-6 mb-8 relative z-10">
+                        <div class="text-7xl md:text-8xl font-black text-smb-gold leading-none" id="dash-score">85</div>
+                        <div class="pb-2 text-lg md:text-xl font-medium text-blue-200 uppercase tracking-wider">/ 100 Points</div>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 relative z-10">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3 gap-2">
+                            <span class="font-bold text-lg">Status: <span class="text-green-400 uppercase tracking-wide" id="dash-status">Highly Eligible</span></span>
+                            <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg w-fit">
+                                <span class="text-2xl" id="dash-flag">🇨🇦</span>
+                                <span class="font-bold" id="dash-country">Canada</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-blue-100 leading-relaxed" id="dash-message">Based on your age, education, and financial capability, you have a strong profile for your target destination. Please book an appointment to finalize your path with our legal team.</p>
+                    </div>
+                    
+                    <button onclick="showBookingView()" class="mt-8 w-full bg-white hover:bg-gray-100 text-smb-blue py-4 rounded-xl font-black uppercase tracking-widest shadow-lg transition relative z-10 text-sm md:text-base">
+                        <i class="fas fa-calendar-alt mr-2"></i> Book Formal Consultation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKING VIEW (Calendar & Time Slots) -->
+        <div id="booking-view" style="display: none;" class="p-6 md:p-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div>
+                    <button onclick="goToDashboard()" class="text-smb-blue dark:text-blue-400 font-bold mb-2 hover:underline flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                    <h2 class="text-3xl font-black text-smb-blue dark:text-white">Schedule Consultation</h2>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mt-1">Select an available date and time for your legal review.</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-700 rounded-3xl p-6 md:p-10 shadow-xl border border-gray-100 dark:border-slate-600 max-w-4xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-10">
+                    
+                    <!-- Calendar Section -->
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:bg-smb-blue hover:text-white transition"><i class="fas fa-chevron-left"></i></button>
+                            <h3 id="calendar-month-year" class="text-lg font-bold text-gray-900 dark:text-white">Month Year</h3>
+                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-600 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:bg-smb-blue hover:text-white transition"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                            <div class="text-xs font-bold text-gray-400">Sun</div>
+                            <div class="text-xs font-bold text-gray-400">Mon</div>
+                            <div class="text-xs font-bold text-gray-400">Tue</div>
+                            <div class="text-xs font-bold text-gray-400">Wed</div>
+                            <div class="text-xs font-bold text-gray-400">Thu</div>
+                            <div class="text-xs font-bold text-gray-400">Fri</div>
+                            <div class="text-xs font-bold text-gray-400">Sat</div>
+                        </div>
+                        <div id="calendar-days" class="grid grid-cols-7 gap-1 text-center">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Time Slots & Confirmation -->
+                    <div class="flex flex-col border-t md:border-t-0 md:border-l border-gray-100 dark:border-slate-600 pt-8 md:pt-0 md:pl-10">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Available Time Slots</h3>
+                        <div id="time-slots-container" class="grid grid-cols-2 gap-3 mb-8">
+                            <p class="text-sm text-gray-500 col-span-2 italic">Please select a date on the calendar first.</p>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-600 mb-6">
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold mb-1">Selected Schedule</p>
+                                <p id="selected-schedule-text" class="font-bold text-smb-blue dark:text-blue-400">None selected</p>
+                            </div>
+                            <button id="confirm-booking-btn" onclick="confirmBooking()" class="w-full bg-smb-gold hover:bg-amber-700 text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg transition opacity-50 cursor-not-allowed" disabled>
+                                Confirm Appointment
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKING SUCCESS MODAL -->
+        <div id="booking-success-modal" class="fixed inset-0 bg-[#0b1136]/80 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 max-w-md w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="booking-modal-content">
+                <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check text-4xl text-green-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Booking Confirmed!</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">Your formal consultation has been scheduled for:</p>
+                <div class="bg-blue-50 dark:bg-slate-700 p-4 rounded-xl border border-blue-100 dark:border-slate-600 mb-8 inline-block w-full">
+                    <p id="success-schedule" class="font-bold text-smb-blue dark:text-blue-400 text-lg"></p>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">We have sent a calendar invitation and a secure meeting link to your email address.</p>
+                <button onclick="closeBookingModal()" class="w-full bg-smb-blue hover:bg-blue-900 text-white py-3 rounded-xl font-bold transition shadow-md">
+                    Return to Dashboard
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Icon initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+            }
+        });
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        // View Toggling
+        function toggleAuth(mode) {
+            if(mode === 'login') {
+                document.getElementById('register-container').style.display = 'none';
+                document.getElementById('login-container').style.display = 'block';
+            } else {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('register-container').style.display = 'block';
+                goToStep(0); 
+            }
+        }
+
+        // Data Models
+        const countriesList = [
+            { name: "Australia", flag: "🇦🇺" }, { name: "Canada", flag: "🇨🇦" },
+            { name: "Denmark", flag: "🇩🇰" }, { name: "France", flag: "🇫🇷" },
+            { name: "Germany", flag: "🇩🇪" }, { name: "Ireland", flag: "🇮🇪" },
+            { name: "New Zealand", flag: "🇳🇿" }, { name: "Norway", flag: "🇳🇴" },
+            { name: "Poland", flag: "🇵🇱" }, { name: "Singapore", flag: "🇸🇬" },
+            { name: "Spain", flag: "🇪🇸" }, { name: "UAE", flag: "🇦🇪" },
+            { name: "United Kingdom", flag: "🇬🇧" }, { name: "United States", flag: "🇺🇸" }
+        ];
+
+        let selectedCountry = "";
+        let selectedFlag = "";
+
+        // Country Selection Grid Generation
+        const selectGrid = document.getElementById('country-selection-grid');
+        countriesList.forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'country-select-card py-6 px-2 flex flex-col items-center justify-center';
+            el.innerHTML = `<div class="text-4xl mb-3 drop-shadow-sm">${c.flag}</div><p class="font-bold text-xs text-center text-gray-800 dark:text-gray-200">${c.name}</p>`;
+            el.onclick = () => {
+                document.querySelectorAll('.country-select-card').forEach(n => n.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedCountry = c.name;
+                selectedFlag = c.flag;
+            };
+            selectGrid.appendChild(el);
+        });
+
+        // Question Bank
+        const questionBank = {
+            canada: {
+                step3: [
+                    { id: "ca_age", text: "1. What is your current age?", opts: [{l: "18 - 35 years old (Max Points)", v: 30}, {l: "36 - 45 years old", v: 15}, {l: "46 years old and above", v: 5}] },
+                    { id: "ca_edu", text: "2. What is your highest level of education?", opts: [{l: "Master's / Ph.D.", v: 30}, {l: "Bachelor's Degree / Two or more certificates", v: 20}, {l: "High School Diploma / Undergraduate", v: 10}] },
+                    { id: "ca_exp", text: "3. How many years of skilled work experience do you have?", opts: [{l: "3 or more years", v: 25}, {l: "1 - 2 years", v: 15}, {l: "Less than 1 year", v: 5}] }
+                ],
+                step4: [
+                    { id: "ca_eng", text: "4. What is your English or French language proficiency?", opts: [{l: "CLB 9 or higher (Advanced/Fluent)", v: 25}, {l: "CLB 7-8 (Intermediate)", v: 15}, {l: "No test taken yet", v: 0}] },
+                    { id: "ca_job", text: "5. Do you have a valid job offer in Canada or a Provincial Nomination?", opts: [{l: "Yes, I have an approved job offer/nomination", v: 15}, {l: "No, applying independently", v: 0}] }
+                ]
+            },
+            uk: {
+                step3: [
+                    { id: "uk_spon", text: "1. Do you have a valid Certificate of Sponsorship (Job Offer) from a UK employer?", opts: [{l: "Yes, I have a sponsorship", v: 40}, {l: "No, but I am actively applying for jobs", v: 10}, {l: "No, I plan to study instead", v: 20}] },
+                    { id: "uk_sal", text: "2. Does your prospective salary meet the UK threshold (£38,700/yr)?", opts: [{l: "Yes, it meets/exceeds the threshold", v: 20}, {l: "No / I am not sure", v: 0}, {l: "N/A (Student Visa route)", v: 15}] },
+                    { id: "uk_fund", text: "3. Do you have sufficient personal savings to support yourself?", opts: [{l: "Yes, I meet the financial requirement", v: 15}, {l: "My sponsor will certify my maintenance", v: 15}, {l: "No savings yet / Need financing", v: 0}] }
+                ],
+                step4: [
+                    { id: "uk_eng", text: "4. Have you passed an approved English language test (e.g., IELTS UKVI)?", opts: [{l: "Yes, B1 level or higher", v: 20}, {l: "I have a degree taught in English", v: 20}, {l: "No test taken yet", v: 0}] },
+                    { id: "uk_rec", text: "5. Do you have any previous UK visa refusals?", opts: [{l: "None (Clean Record)", v: 10}, {l: "Yes, I have a previous refusal", v: 0}] }
+                ]
+            },
+            aus: {
+                step3: [
+                    { id: "au_age", text: "1. What is your current age?", opts: [{l: "18 - 32 years old (Max Points)", v: 30}, {l: "33 - 39 years old", v: 20}, {l: "40 - 44 years old", v: 10}, {l: "45+ years old", v: 0}] },
+                    { id: "au_skill", text: "2. Have you completed a formal Skills Assessment for your occupation?", opts: [{l: "Yes, positively assessed", v: 30}, {l: "No, but my occupation is on the skills list", v: 15}, {l: "No, planning to study first", v: 20}] },
+                    { id: "au_exp", text: "3. How many years of overseas skilled employment do you have?", opts: [{l: "8+ years", v: 15}, {l: "3-7 years", v: 10}, {l: "Less than 3 years", v: 0}] }
+                ],
+                step4: [
+                    { id: "au_eng", text: "4. What is your English proficiency level?", opts: [{l: "Superior (IELTS 8.0+)", v: 20}, {l: "Proficient (IELTS 7.0+)", v: 10}, {l: "Competent / None yet", v: 0}] },
+                    { id: "au_state", text: "5. Do you have state or territory nomination?", opts: [{l: "Yes (Subclass 190/491)", v: 10}, {l: "No / Applying independently (Subclass 189)", v: 0}] }
+                ]
+            },
+            general: {
+                step3: [
+                    { id: "gen_age", text: "1. What is your current age?", opts: [{l: "18 - 30 years old", v: 30}, {l: "31 - 35 years old", v: 20}, {l: "36 years old and above", v: 10}] },
+                    { id: "gen_edu", text: "2. What is the highest level of education you have attained?", opts: [{l: "Master's / Bachelor's Degree", v: 30}, {l: "Advanced Diploma / Associate Degree", v: 20}, {l: "High School Graduate / Undergraduate", v: 10}] },
+                    { id: "gen_fin", text: "3. How would you finance your visa application?", opts: [{l: "I have access to my own funds (Liquid Assets)", v: 30}, {l: "Family member sponsorship", v: 15}, {l: "Looking for financing", v: 0}] }
+                ],
+                step4: [
+                    { id: "gen_eng", text: "4. What English as a second language exams have you taken?", opts: [{l: "IELTS / TOEFL / PTE Academic / OET", v: 20}, {l: "None of the above (Willing to review)", v: 0}] },
+                    { id: "gen_rec", text: "5. Do you have any unlawful visa records?", opts: [{l: "None (Clean Record)", v: 10}, {l: "Yes, I have previous refusals/records", v: 0}] }
+                ]
+            }
+        };
+
+        // Form Validation
+        function validateEmail(input) {
+            const errorEl = document.getElementById('email-error');
+            const val = input.value;
+            if (!val) { errorEl.classList.add('hidden'); input.style.borderColor = ''; return false; }
+
+            let errorMsg = '';
+            if (!val.includes('@')) errorMsg = "Please include an '@'.";
+            else if (val.split('@')[1].indexOf('.') === -1) errorMsg = "Enter a valid domain.";
+            else if (/\s/.test(val)) errorMsg = "Cannot contain spaces.";
+
+            if (errorMsg) {
+                errorEl.innerText = errorMsg; errorEl.classList.remove('hidden');
+                input.style.borderColor = '#ef4444'; return false;
+            } else {
+                errorEl.classList.add('hidden'); input.style.borderColor = '#10b981'; return true;
+            }
+        }
+
+        function renderDynamicQuestions(country) {
+            let type = 'general';
+            if (country === 'Canada') type = 'canada';
+            else if (country === 'United Kingdom' || country === 'Ireland') type = 'uk';
+            else if (['Australia', 'New Zealand'].includes(country)) type = 'aus';
+
+            const data = questionBank[type];
+            
+            document.getElementById('step3-title').innerHTML = `Great choice, ${document.getElementById('fname').value || 'there'}!`;
+            document.getElementById('step3-subtitle').innerHTML = `We'll ask specific questions based on <b class="text-smb-blue dark:text-blue-400">${country}'s</b> immigration criteria.`;
+
+            const cardClass = "bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm";
+            const textClass = "font-bold text-gray-800 dark:text-gray-200 mb-4";
+
+            document.getElementById('dynamic-step3-questions').innerHTML = data.step3.map(q => `
+                <div class="${cardClass}">
+                    <p class="${textClass}">${q.text}</p>
+                    ${q.opts.map(opt => `
+                        <label class="block"><input type="radio" name="${q.id}" value="${opt.v}" class="hidden"><span class="radio-card">${opt.l}</span></label>
+                    `).join('')}
+                </div>
+            `).join('');
+
+            document.getElementById('dynamic-step4-questions').innerHTML = data.step4.map(q => `
+                <div class="${cardClass}">
+                    <p class="${textClass}">${q.text}</p>
+                    ${q.opts.map(opt => `
+                        <label class="block"><input type="radio" name="${q.id}" value="${opt.v}" class="hidden"><span class="radio-card">${opt.l}</span></label>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // Stepper Logic
+        function goToStep(step, validate = false) {
+            if(validate && step === 2) {
+                const emailInput = document.getElementById('email');
+                if(!document.getElementById('fname').value || !document.getElementById('lname').value || !document.getElementById('terms').checked || !validateEmail(emailInput)) {
+                    alert("Please fill required fields correctly and agree to terms.");
+                    return;
+                }
+            }
+            if(step === 3) {
+                if(!selectedCountry) {
+                    alert("Please select a target destination.");
+                    return;
+                }
+                renderDynamicQuestions(selectedCountry);
+            }
+
+            document.querySelectorAll('.assessment-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+
+            const indicators = document.getElementById('step-indicators');
+            if(step === 0 || step === 5) {
+                indicators.classList.add('hidden');
+            } else {
+                indicators.classList.remove('hidden');
+                for(let i=1; i<=4; i++) {
+                    let ind = document.getElementById(`ind-${i}`);
+                    let line = document.getElementById(`line-${i-1}`); 
+                    
+                    ind.className = 'step-indicator';
+                    if(document.documentElement.classList.contains('dark')) {
+                        // Dark mode overrides for non-active states handled in CSS
+                    }
+                    if(line) line.className = 'step-line';
+
+                    if(i < step) {
+                        ind.classList.add('completed');
+                        ind.innerHTML = '<i class="fas fa-check text-xs"></i>';
+                        if(line) line.classList.add('active');
+                    } else if (i === step) {
+                        ind.classList.add('active');
+                        ind.innerHTML = i;
+                    } else {
+                        ind.innerHTML = i;
+                    }
+                }
+            }
+            window.scrollTo(0,0);
+        }
+
+        let globalScore = 0;
+        let globalId = "";
+
+        function completeAssessment() {
+            const step3Questions = document.getElementById('dynamic-step3-questions').querySelectorAll('.bg-white, .dark\\:bg-slate-800').length;
+            const step4Questions = document.getElementById('dynamic-step4-questions').querySelectorAll('.bg-white, .dark\\:bg-slate-800').length;
+            const checkedRadios = document.querySelectorAll('input[type="radio"]:checked').length;
+            
+            if (checkedRadios < (step3Questions + step4Questions)) {
+                alert("Please select an answer for all assessment questions before submitting.");
+                return;
+            }
+            
+            if(!document.getElementById('reg-password').value) {
+                alert("Please create a password to save your profile.");
+                return;
+            }
+
+            let score = 0;
+            document.querySelectorAll('input[type="radio"]:checked').forEach(r => score += parseInt(r.value));
+            
+            // Baseline bump
+            globalScore = score + 20; 
+            if(globalScore > 100) globalScore = 100;
+
+            const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            globalId = `SMB-${randomCode}`;
+
+            goToStep(5);
+        }
+
+        function goToDashboard() {
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+
+            const fname = document.getElementById('fname').value || "Client";
+            const lname = document.getElementById('lname').value || "";
+            document.getElementById('dash-name').innerText = `${fname} ${lname}`;
+            document.getElementById('dash-initials').innerText = fname.charAt(0) + (lname ? lname.charAt(0) : "");
+            
+            document.getElementById('dash-id').innerText = globalId;
+            
+            // Animate Score Counter
+            let currentDisplay = 0;
+            const scoreEl = document.getElementById('dash-score');
+            const interval = setInterval(() => {
+                if(currentDisplay >= globalScore) {
+                    clearInterval(interval);
+                    scoreEl.innerText = globalScore;
+                } else {
+                    currentDisplay += 2;
+                    scoreEl.innerText = currentDisplay;
+                }
+            }, 30);
+            
+            document.getElementById('dash-country').innerText = selectedCountry || "your destination";
+            document.getElementById('dash-flag').innerText = selectedFlag;
+
+            const statusEl = document.getElementById('dash-status');
+            const msgEl = document.getElementById('dash-message');
+            
+            if(globalScore >= 80) { 
+                statusEl.innerText = "Highly Eligible"; 
+                statusEl.className = "text-green-400 uppercase tracking-wide"; 
+                msgEl.innerText = `Based on your responses, you have a very strong profile for ${selectedCountry}. Please book an appointment to formalize your path with our legal team.`;
+            } else if(globalScore >= 50) { 
+                statusEl.innerText = "Needs Review"; 
+                statusEl.className = "text-amber-400 uppercase tracking-wide"; 
+                msgEl.innerText = `You have potential for ${selectedCountry}, but we need to address a few areas to maximize your chances. Book a consultation to explore alternatives.`;
+            } else { 
+                statusEl.innerText = "Consultation Required"; 
+                statusEl.className = "text-red-400 uppercase tracking-wide"; 
+                msgEl.innerText = `Based on current points, direct entry to ${selectedCountry} might be challenging. However, there are alternative pathways (like study-to-work). Let's discuss your options.`;
+            }
+            
+            window.scrollTo(0,0);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            // In a real scenario, this connects to Firebase Auth
+            const btn = event.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                alert("This connects to the database. For demo, we will log you in to a mock profile.");
+                document.getElementById('login-container').style.display = 'none';
+                
+                // Set mock data
+                selectedCountry = "United Kingdom";
+                selectedFlag = "🇬🇧";
+                globalScore = 85;
+                globalId = document.querySelector('input[type="text"]').value || "SMB-MOCK88";
+                document.getElementById('fname').value = "Jane";
+                document.getElementById('lname').value = "Doe";
+                
+                goToDashboard();
+            }, 800);
+        }
+
+        // --- BOOKING CALENDAR LOGIC ---
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        let selectedDate = null;
+        let selectedTime = null;
+
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const timeSlots = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
+
+        function showBookingView() {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('booking-view').style.display = 'block';
+            renderCalendar(currentMonth, currentYear);
+            window.scrollTo(0,0);
+        }
+
+        function renderCalendar(month, year) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0,0,0,0); // Normalize to start of day for accurate comparison
+            
+            document.getElementById('calendar-month-year').innerText = `${months[month]} ${year}`;
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = "";
+
+            // Empty slots before first day of month
+            for (let i = 0; i < firstDay; i++) {
+                calendarDays.innerHTML += `<div></div>`;
+            }
+
+            // Actual Days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const thisDayDate = new Date(year, month, i);
+                const isPast = thisDayDate < today;
+                const isWeekend = thisDayDate.getDay() === 0 || thisDayDate.getDay() === 6;
+                const isDisabled = isPast || isWeekend; // Disable past days and weekends
+
+                let btnClass = isDisabled 
+                    ? "w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                    : "w-8 h-8 md:w-10 md:h-10 mx-auto rounded-full flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600 cursor-pointer transition";
+
+                // Highlight selected date
+                if (selectedDate && selectedDate.getDate() === i && selectedDate.getMonth() === month && selectedDate.getFullYear() === year) {
+                    btnClass += " bg-smb-blue text-white dark:bg-blue-500 dark:text-white shadow-md";
+                }
+
+                calendarDays.innerHTML += `<button class="${btnClass}" ${isDisabled ? 'disabled' : `onclick="selectDate(${i})"`}>${i}</button>`;
+            }
+        }
+
+        function changeMonth(dir) {
+            currentMonth += dir;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar(currentMonth, currentYear);
+        }
+
+        function selectDate(day) {
+            selectedDate = new Date(currentYear, currentMonth, day);
+            selectedTime = null; // Reset time if date changes
+            
+            // Re-render calendar to apply active blue highlight
+            renderCalendar(currentMonth, currentYear);
+            
+            // Render time slots dynamically
+            const timeContainer = document.getElementById('time-slots-container');
+            timeContainer.innerHTML = timeSlots.map(time => `
+                <button onclick="selectTime('${time}', this)" class="time-btn py-2 px-4 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-bold text-gray-600 dark:text-gray-300 hover:border-smb-blue dark:hover:border-blue-400 transition">
+                    ${time}
+                </button>
+            `).join('');
+
+            updateBookingStatus();
+        }
+
+        function selectTime(time, btn) {
+            selectedTime = time;
+            
+            // Reset styles on all time buttons
+            document.querySelectorAll('.time-btn').forEach(b => {
+                b.classList.remove('bg-smb-blue', 'text-white', 'border-smb-blue', 'dark:bg-blue-500', 'dark:border-blue-500');
+                b.classList.add('text-gray-600', 'dark:text-gray-300');
+            });
+            
+            // Add active style to selected
+            btn.classList.remove('text-gray-600', 'dark:text-gray-300');
+            btn.classList.add('bg-smb-blue', 'text-white', 'border-smb-blue', 'dark:bg-blue-500', 'dark:border-blue-500');
+            
+            updateBookingStatus();
+        }
+
+        function updateBookingStatus() {
+            const statusText = document.getElementById('selected-schedule-text');
+            const confirmBtn = document.getElementById('confirm-booking-btn');
+
+            if (selectedDate && selectedTime) {
+                const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+                const dateStr = selectedDate.toLocaleDateString('en-US', dateOptions);
+                statusText.innerText = `${dateStr} at ${selectedTime}`;
+                statusText.classList.replace('text-gray-400', 'text-smb-blue');
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else if (selectedDate) {
+                const dateStr = selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                statusText.innerText = `${dateStr} - Please select a time`;
+                confirmBtn.disabled = true;
+                confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function confirmBooking() {
+            const modal = document.getElementById('booking-success-modal');
+            const modalContent = document.getElementById('booking-modal-content');
+            
+            const dateStr = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('success-schedule').innerText = `${dateStr} @ ${selectedTime}`;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10); // Small delay to trigger CSS transition
+        }
+
+        function closeBookingModal() {
+            const modal = document.getElementById('booking-success-modal');
+            const modalContent = document.getElementById('booking-modal-content');
+            
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                
+                // Return to dashboard
+                document.getElementById('booking-view').style.display = 'none';
+                document.getElementById('dashboard-view').style.display = 'block';
+                
+                // Update original button to reflect confirmed status
+                const dashBtn = document.querySelector('#dashboard-view button[onclick="showBookingView()"]');
+                if(dashBtn) {
+                    dashBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Consultation Scheduled';
+                    dashBtn.classList.replace('bg-white', 'bg-green-500');
+                    dashBtn.classList.replace('text-smb-blue', 'text-white');
+                    dashBtn.classList.remove('hover:bg-gray-100');
+                    dashBtn.classList.add('hover:bg-green-600', 'border-transparent');
+                    dashBtn.onclick = null; // Disable clicking again
+                }
+                window.scrollTo(0,0);
+            }, 300);
+        }
+    </script>
+</body>
+</html>

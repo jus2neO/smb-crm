@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMB International Visa Consultancy</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        smb: { blue: '#0b1136', gold: '#b45309' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root { --smb-blue: #0b1136; --smb-gold: #b45309; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
+        .hero-gradient {
+            background: linear-gradient(rgba(11, 17, 54, 0.85), rgba(11, 17, 54, 0.85)), 
+                        url('https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&q=80&w=1600');
+            background-size: cover; background-position: center;
+        }
+        .ceo-image-container { position: relative; display: inline-block; width: 100%; max-width: 400px; }
+        .ceo-img { width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; object-position: center 20%; border-radius: 0.5rem; display: block; background-color: #f3f4f6; }
+        .ceo-image-container::after { content: ''; position: absolute; top: 20px; right: -20px; bottom: -20px; left: 20px; border: 4px solid var(--smb-gold); z-index: -1; border-radius: 0.5rem; }
+        .nav-logo { height: 56px; width: auto; object-fit: contain; cursor: pointer; }
+        .service-card-img { height: 200px; width: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .service-card:hover .service-card-img { transform: scale(1.1); }
+        .destination-card .hover-overlay { opacity: 0; background-color: rgba(0, 0, 0, 0.85); transition: 0.4s; backdrop-filter: blur(2px); }
+        .destination-card:hover .hover-overlay { opacity: 1; }
+        .destination-card .country-label { transition: 0.4s; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); z-index: 10; }
+        .destination-card:hover .country-label { transform: translateY(-40px); font-size: 1.5rem; }
+        .destination-card .details-text { transform: translateY(20px); opacity: 0; transition: 0.4s; }
+        .destination-card:hover .details-text { transform: translateY(0); opacity: 1; }
+    </style>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-slate-900/95 backdrop-blur-md shadow-md sticky top-0 z-50 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center" onclick="window.scrollTo(0,0)">
+                    <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" alt="SMB Logo" class="nav-logo dark:brightness-0 dark:invert transition-all" onerror="this.src='smb-logo-v3.png'">
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="#about" class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">About Us</a>
+                    <a href="#services" class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Services</a>
+                    <a href="#gallery" class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Gallery</a>
+                    <a href="faq.html" class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">FAQ</a>
+                    <a href="#contact" class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Contact</a>
+                    
+                    <button onclick="toggleDarkMode()" class="ml-4 text-gray-500 dark:text-gray-400 hover:text-smb-blue dark:hover:text-blue-400 bg-gray-50 dark:bg-slate-800 p-2.5 rounded-full shadow-sm border border-gray-200 dark:border-slate-700 transition">
+                        <i id="theme-icon" class="fas fa-moon text-lg w-5 h-5 flex items-center justify-center"></i>
+                    </button>
+
+                    <a href="portal.html" class="bg-[#0b1136] dark:bg-blue-600 text-white px-6 py-2.5 rounded-full hover:bg-blue-800 dark:hover:bg-blue-700 transition shadow-lg flex items-center gap-2 font-semibold ml-2">
+                        <i class="fas fa-user-circle"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient h-[600px] flex items-center justify-center text-center text-white px-4">
+        <div class="max-w-4xl">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">Fulfilling Lives</h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-200">Your trusted partner in global migration, education, and career opportunities.</p>
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <span class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30">Study Visa</span>
+                <span class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30">Work Visa</span>
+                <span class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30">Marriage Visa</span>
+                <span class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30">Permanent Residency</span>
+            </div>
+            <a href="portal.html?mode=register" class="bg-[#b45309] hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-lg transition shadow-xl inline-block mt-4">
+                Take Eligibility Assessment
+            </a>
+        </div>
+    </section>
+
+    <!-- CEO Section -->
+    <section id="about" class="py-20 bg-white dark:bg-slate-800 overflow-hidden transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="order-2 md:order-1">
+                    <h2 class="text-smb-gold font-bold tracking-widest uppercase mb-2">Message from the Leadership</h2>
+                    <h3 class="text-3xl md:text-4xl font-bold text-[#0b1136] dark:text-white mb-6">Improving Lives of Many</h3>
+                    <div class="space-y-4 text-gray-700 dark:text-gray-300 italic leading-relaxed text-lg">
+                        <p>“Driven by the aspiration of helping Filipinos, let me share our commitment with you. Utilizing career counseling and expert documentation, we inspire and guide individuals towards visa acquisition.”</p>
+                        <p>“We aim to be globally recognized, offering study internships, scholarships, and training programs that enhance employment prospects with world-class skills. We value the significance of this life-changing investment.”</p>
+                        <p>“We pride ourselves on providing unparalleled opportunities, maintaining high standards, and forming solid partnerships. Join us, and let's improve and build lives together!”</p>
+                    </div>
+                    <div class="mt-8">
+                        <p class="font-bold text-xl text-[#0b1136] dark:text-blue-400">Shiela Mae Bullar</p>
+                        <p class="text-smb-gold font-medium uppercase tracking-wider">Founder & CEO</p>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2 flex justify-center">
+                    <div class="ceo-image-container">
+                        <img src="https://i.postimg.cc/s2gv4H0r/IMG-20250114-WA0014.jpg" alt="Shiela Mae Bullar" class="ceo-img shadow-2xl" onerror="this.src='image_f06d62.jpg'">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section (Restored) -->
+    <section id="services" class="py-20 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-[#0b1136] dark:text-white mb-4">Our Specialized Services</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Expert guidance and personalized solutions for your global aspirations.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Service cards -->
+                <div class="service-card bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden hover:shadow-xl transition-all border-b-4 border-smb-gold dark:border-amber-600 group">
+                    <div class="overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&q=80&w=800" alt="Couple" class="service-card-img">
+                        <div class="absolute inset-0 bg-[#0b1136]/20 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto -mt-12 relative z-10 mb-4 border-2 border-white dark:border-slate-800">
+                            <i class="fas fa-user-friends text-[#0b1136] dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-[#0b1136] dark:text-white">Spousal/Fiancé</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Dedicated support for family reunification and partner visas across Europe and North America.</p>
+                    </div>
+                </div>
+                <div class="service-card bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden hover:shadow-xl transition-all border-b-4 border-smb-gold dark:border-amber-600 group">
+                    <div class="overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800" alt="Students studying" class="service-card-img">
+                        <div class="absolute inset-0 bg-[#0b1136]/20 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto -mt-12 relative z-10 mb-4 border-2 border-white dark:border-slate-800">
+                            <i class="fas fa-graduation-cap text-[#0b1136] dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-[#0b1136] dark:text-white">Student Visa</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Partnered with top international schools to provide world-class education and career options.</p>
+                    </div>
+                </div>
+                <div class="service-card bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden hover:shadow-xl transition-all border-b-4 border-smb-gold dark:border-amber-600 group">
+                    <div class="overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" alt="Business" class="service-card-img">
+                        <div class="absolute inset-0 bg-[#0b1136]/20 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto -mt-12 relative z-10 mb-4 border-2 border-white dark:border-slate-800">
+                            <i class="fas fa-briefcase text-[#0b1136] dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-[#0b1136] dark:text-white">Business/Migrate</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Expert documentation for skilled migration, permanent residency, and business ventures.</p>
+                    </div>
+                </div>
+                <div class="service-card bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden hover:shadow-xl transition-all border-b-4 border-smb-gold dark:border-amber-600 group">
+                    <div class="overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800" alt="Tourist" class="service-card-img">
+                        <div class="absolute inset-0 bg-[#0b1136]/20 group-hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto -mt-12 relative z-10 mb-4 border-2 border-white dark:border-slate-800">
+                            <i class="fas fa-plane text-[#0b1136] dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-[#0b1136] dark:text-white">Visit/Tourist</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Hassle-free visa assistance for your global travels and international exploration.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destination Gallery Section -->
+    <section id="gallery" class="py-20 bg-white dark:bg-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-[#0b1136] dark:text-white mb-4">Our Global Reach</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">Explore where we can help you build your future.</p>
+            <div id="country-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- Detailed Contact Section (Restored) -->
+    <section id="contact" class="py-24 bg-slate-50 dark:bg-slate-900 relative overflow-hidden border-t border-gray-200 dark:border-slate-800 transition-colors">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-smb-gold/5 dark:bg-amber-500/5 rounded-full -mr-32 -mt-32"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-smb-blue/5 dark:bg-blue-500/5 rounded-full -ml-48 -mb-48"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-[#0b1136] dark:text-white mb-4 tracking-tight">GET IN TOUCH</h2>
+                <div class="w-24 h-1.5 bg-smb-gold mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- International HQ -->
+                <div class="bg-white dark:bg-slate-800 p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 flex flex-col h-full transition-colors">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-14 h-14 bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-[#0b1136] dark:text-blue-400 text-2xl"><i class="fas fa-globe"></i></div>
+                        <div><h3 class="text-2xl font-bold text-[#0b1136] dark:text-white">International HQ</h3><p class="text-smb-gold dark:text-amber-500 font-medium">Global Operations</p></div>
+                    </div>
+                    <div class="space-y-6 flex-grow">
+                        <div class="flex items-start gap-4"><i class="fas fa-map-marker-alt text-smb-gold dark:text-amber-500 mt-1.5"></i><p class="text-lg text-gray-700 dark:text-gray-300 leading-tight">London, United Kingdom</p></div>
+                        <div class="flex items-center gap-4"><i class="fas fa-envelope text-smb-gold dark:text-amber-500"></i><a href="mailto:admin@smbvisa.com" class="text-lg text-blue-600 dark:text-blue-400 font-semibold hover:underline decoration-2 underline-offset-4">admin@smbvisa.com</a></div>
+                        <div class="pt-6 border-t border-gray-100 dark:border-slate-700">
+                            <h4 class="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4">Support Offices</h4>
+                            <div class="grid grid-cols-2 gap-y-3">
+                                <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium"><span class="w-1.5 h-1.5 bg-smb-gold rounded-full"></span> Canada</div>
+                                <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium"><span class="w-1.5 h-1.5 bg-smb-gold rounded-full"></span> UK</div>
+                                <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium"><span class="w-1.5 h-1.5 bg-smb-gold rounded-full"></span> Dubai</div>
+                                <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium"><span class="w-1.5 h-1.5 bg-smb-gold rounded-full"></span> Europe</div>
+                                <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium"><span class="w-1.5 h-1.5 bg-smb-gold rounded-full"></span> SE Asia</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Philippines HQ -->
+                <div class="bg-[#0b1136] dark:bg-blue-900 p-8 md:p-10 rounded-3xl shadow-xl text-white flex flex-col h-full transition-colors">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-smb-gold dark:text-amber-500 text-2xl"><i class="fas fa-flag"></i></div>
+                        <div><h3 class="text-2xl font-bold">Philippines HQ</h3><p class="text-blue-200 font-medium">Regional Operations</p></div>
+                    </div>
+                    <div class="space-y-6 flex-grow">
+                        <div class="flex items-start gap-4"><i class="fas fa-map-marker-alt text-smb-gold dark:text-amber-500 mt-1.5"></i><div><p class="text-lg leading-tight mb-1">Ortigas Center, Pasig Metro Manila</p><p class="text-lg leading-tight">Bacolod City</p></div></div>
+                        <div class="flex items-start gap-4"><i class="fas fa-phone-alt text-smb-gold dark:text-amber-500 mt-1.5"></i><div class="text-2xl font-bold tracking-tight"><p>+63 938 931 4030</p><p>+63 992 969 9308</p></div></div>
+                        <div class="pt-6 border-t border-white/10">
+                            <h4 class="text-sm font-bold text-blue-300 uppercase tracking-widest mb-4">Regional Reach</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-y-2 text-sm font-medium text-blue-100">
+                                <span>• NCR</span><span>• Baguio</span><span>• Pampanga</span><span>• Bulacan</span><span>• Cebu</span><span>• Iloilo</span><span>• CDO</span><span>• Davao</span><span>• Palawan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 dark:bg-slate-950 text-white py-12 transition-colors text-center">
+        <div class="flex flex-col items-center gap-6">
+            <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" alt="SMB Logo" class="h-16 mb-4 filter brightness-0 invert opacity-90 inline">
+            <div class="flex gap-8 text-2xl mb-4">
+                <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube"></i></a>
+            </div>
+            <div class="border-t border-white/5 pt-8 w-full max-w-lg">
+                <p class="text-gray-500 dark:text-gray-600 text-sm">© 2025 SMB International. All rights reserved.</p>
+                <p class="mt-4 text-smb-gold dark:text-amber-600 italic uppercase tracking-[0.3em] font-black text-xs">"Improving Lives of Many"</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            if (document.documentElement.classList.contains('dark')) document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+            renderGallery();
+        });
+        const destinations = [
+            { name: "Finland", img: "https://images.unsplash.com/photo-1516132006923-6cf348e5dee2?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Marriage Visa • Migrate" },
+            { name: "Belgium", img: "https://images.unsplash.com/photo-1559113513-d5e09c78b9dd?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Marriage Visa" },
+            { name: "Austria", img: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Migrate" },
+            { name: "Ireland", img: "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?auto=format&fit=crop&q=80&w=800", services: "Study Visa" },
+            { name: "France", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Migrate" },
+            { name: "Spain", img: "https://images.unsplash.com/photo-1543783207-ec64e4d95325?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Visit Visa • Migrate" },
+            { name: "Netherlands", img: "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa" },
+            { name: "United Kingdom", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Marriage Visa • Migrate" },
+            { name: "New Zealand", img: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Marriage Visa" },
+            { name: "Australia", img: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Migrate" },
+            { name: "Canada", img: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Visit Visa • Migrate" },
+            { name: "Germany", img: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Business Visa • Migrate" },
+            { name: "Denmark", img: "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Visit Visa • Migrate" },
+            { name: "Italy", img: "https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?auto=format&fit=crop&q=80&w=800", services: "Internship Program • Business Visa • Visit Visa" },
+            { name: "Sweden", img: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&q=80&w=800", services: "Study Visa • Migrate" }
+        ];
+        function renderGallery() {
+            const grid = document.getElementById('country-grid');
+            destinations.forEach(dest => {
+                grid.innerHTML += `
+                    <div class="destination-card relative overflow-hidden rounded-xl h-72 group cursor-pointer shadow-lg border border-transparent dark:border-slate-700">
+                        <img src="${dest.img}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="country-label text-white text-2xl font-bold tracking-widest uppercase drop-shadow-md">${dest.name}</span>
+                        </div>
+                        <div class="hover-overlay absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                            <p class="details-text text-white text-sm font-medium leading-relaxed">${dest.services}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>

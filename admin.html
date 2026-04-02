@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin CRM - SMB International</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --smb-blue: #0b1136;
+            --smb-gold: #b45309;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .modal-overlay {
+            background-color: rgba(11, 17, 54, 0.6);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden text-gray-800 relative">
+
+    <!-- Admin Login Overlay -->
+    <div id="admin-login-overlay" class="fixed inset-0 bg-[#0b1136] z-[100] flex items-center justify-center px-4 transition-opacity duration-500">
+        <div class="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+        <div class="absolute left-0 bottom-0 w-64 h-64 bg-[#b45309]/10 rounded-full -ml-20 -mb-20 pointer-events-none"></div>
+        
+        <div class="bg-white p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative z-10">
+            <div class="text-center mb-8">
+                <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" alt="SMB Logo" class="h-14 mx-auto mb-4" onerror="this.src='smb-logo-v3.png'">
+                <h2 class="text-2xl font-black text-[#0b1136]">Staff Portal</h2>
+                <p class="text-sm text-gray-500 font-medium mt-1">Authorized personnel only</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Staff Email</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="email" required class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 rounded-xl text-sm outline-none transition-all" placeholder="admin@smbvisa.com">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="password" required class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 rounded-xl text-sm outline-none transition-all" placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-[#b45309] hover:bg-[#92400e] text-white py-3 rounded-xl font-bold transition shadow-lg mt-2 flex items-center justify-center gap-2">
+                    Secure Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-[#0b1136]/50 backdrop-blur-sm z-30 hidden transition-opacity md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-[#0b1136] text-white flex flex-col shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 flex-shrink-0">
+        <div class="p-6 border-b border-white/10 text-center relative">
+            <button onclick="toggleSidebar()" class="absolute top-4 right-4 text-white/50 hover:text-white md:hidden">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+            <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" class="h-12 filter brightness-0 invert mx-auto mb-3" alt="SMB Logo">
+            <p class="text-[10px] font-black tracking-widest uppercase text-[#b45309]">SMB Visa Admin</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 px-3 mt-4">Main Menu</p>
+            <a href="#" onclick="switchView('applicants')" id="nav-applicants" class="nav-link flex items-center gap-3 p-3 bg-white/10 text-[#b45309] rounded-xl font-bold transition">
+                <i class="fas fa-users w-5"></i> Applicants
+            </a>
+            <a href="#" onclick="switchView('schedule')" id="nav-schedule" class="nav-link flex items-center gap-3 p-3 text-gray-300 hover:bg-white/5 hover:text-white rounded-xl font-medium transition">
+                <i class="fas fa-calendar-alt w-5"></i> Schedule
+            </a>
+            <a href="#" onclick="switchView('analytics')" id="nav-analytics" class="nav-link flex items-center gap-3 p-3 text-gray-300 hover:bg-white/5 hover:text-white rounded-xl font-medium transition">
+                <i class="fas fa-chart-pie w-5"></i> Analytics
+            </a>
+            
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 px-3 mt-8">Settings</p>
+            <a href="#" class="nav-link flex items-center gap-3 p-3 text-gray-300 hover:bg-white/5 hover:text-white rounded-xl font-medium transition">
+                <i class="fas fa-cog w-5"></i> System config
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold">SM</div>
+                <div>
+                    <p class="text-sm font-bold">Shiela Mae</p>
+                    <p class="text-xs text-blue-300">Super Admin</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative w-full">
+        
+        <!-- Header -->
+        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 z-10 shadow-sm w-full">
+            <div class="flex items-center gap-3 md:gap-0 overflow-hidden">
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-600 hover:text-[#0b1136] focus:outline-none transition shrink-0">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <h1 class="text-lg md:text-2xl font-black text-[#0b1136] truncate" id="page-title">Applicant Database</h1>
+            </div>
+            <div class="flex items-center gap-3 md:gap-6 flex-shrink-0">
+                <div class="relative w-48 lg:w-72 hidden md:block" id="search-container">
+                    <i class="fas fa-search absolute left-4 top-3 text-gray-400"></i>
+                    <input type="text" id="searchInput" onkeyup="applyFiltersAndSort()" class="w-full pl-11 pr-4 py-2.5 bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-full text-sm outline-none transition-all" placeholder="Search by name or ID...">
+                </div>
+                <div id="export-btn-container" class="hidden">
+                    <button onclick="exportAnalyticsToPDF()" class="bg-[#b45309] hover:bg-[#92400e] text-white px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-bold transition flex items-center gap-2 shadow-md text-xs md:text-sm">
+                        <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">Export Report</span>
+                    </button>
+                </div>
+                <button class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition flex items-center justify-center relative shrink-0">
+                    <i class="fas fa-bell"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-red-500 border-2 border-white rounded-full"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="p-4 md:p-8 overflow-y-auto flex-1 relative">
+            
+            <!-- APPLICANTS VIEW -->
+            <div id="view-applicants" class="block animate-in fade-in duration-500">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-4 md:px-8 py-4 md:py-5 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50/50 gap-3 sm:gap-0">
+                        <h2 class="font-bold text-[#0b1136] text-lg">Recent Applications</h2>
+                        <div class="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+                            <select id="countryFilter" onchange="applyFiltersAndSort()" class="flex-1 sm:flex-none text-xs md:text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-lg px-2 md:px-3 py-2 outline-none hover:border-gray-300 cursor-pointer transition">
+                                <option value="All">All Countries</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Australia">Australia</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="New Zealand">New Zealand</option>
+                            </select>
+                            <select id="statusFilter" onchange="applyFiltersAndSort()" class="flex-1 sm:flex-none text-xs md:text-sm font-bold text-[#b45309] bg-orange-50 border border-orange-100 rounded-lg px-2 md:px-3 py-2 outline-none hover:border-orange-200 cursor-pointer transition">
+                                <option value="All">All Statuses</option>
+                                <option value="New">New</option>
+                                <option value="Review">In Review</option>
+                                <option value="Approved">Approved</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-gray-400 uppercase text-xs font-bold bg-white border-b border-gray-200">
+                                    <th class="px-4 md:px-8 py-3 md:py-4 tracking-wider cursor-pointer hover:text-[#0b1136] transition select-none whitespace-nowrap" onclick="toggleSort('name')">Applicant Info <i id="sort-name" class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="px-4 md:px-8 py-3 md:py-4 tracking-wider cursor-pointer hover:text-[#0b1136] transition select-none whitespace-nowrap" onclick="toggleSort('id')">Tracking ID <i id="sort-id" class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="px-4 md:px-8 py-3 md:py-4 tracking-wider cursor-pointer hover:text-[#0b1136] transition select-none whitespace-nowrap" onclick="toggleSort('country')">Target Country <i id="sort-country" class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="px-4 md:px-8 py-3 md:py-4 tracking-wider cursor-pointer hover:text-[#0b1136] transition select-none whitespace-nowrap" onclick="toggleSort('score')">Score <i id="sort-score" class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="px-4 md:px-8 py-3 md:py-4 tracking-wider cursor-pointer hover:text-[#0b1136] transition select-none whitespace-nowrap" onclick="toggleSort('status')">Status <i id="sort-status" class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="px-4 md:px-8 py-3 md:py-4 text-right tracking-wider whitespace-nowrap">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicant-table-body" class="text-sm">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="px-4 md:px-8 py-4 border-t border-gray-200 bg-gray-50/50 flex justify-between items-center text-xs md:text-sm text-gray-500">
+                        <p id="pagination-text">Showing <span class="font-bold text-gray-900">1 to 5</span> of 5 entries</p>
+                        <div class="flex gap-1 md:gap-2">
+                            <button class="px-2 md:px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50" disabled>Prev</button>
+                            <button class="px-2 md:px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 bg-white font-bold text-[#0b1136]">1</button>
+                            <button class="px-2 md:px-3 py-1 border border-gray-300 rounded hover:bg-gray-100">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Close view-applicants -->
+
+            <!-- SCHEDULE VIEW (NEW) -->
+            <div id="view-schedule" class="hidden animate-in fade-in duration-500">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8 pb-8">
+                    
+                    <!-- Left Col: Calendar & Settings -->
+                    <div class="space-y-6">
+                        <!-- Daily Calendar Selector -->
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                            <h3 class="font-black text-[#0b1136] text-lg mb-4">Select Date</h3>
+                            <input type="date" id="schedule-date-picker" onchange="renderDailySchedule()" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white text-gray-800 font-bold transition shadow-inner">
+                        </div>
+
+                        <!-- Capacity Controls -->
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-gray-50 rounded-full -mr-10 -mt-10 pointer-events-none"></div>
+                            <h3 class="font-black text-[#0b1136] text-lg mb-1 relative z-10">Daily Capacity</h3>
+                            <p class="text-xs text-gray-500 font-medium mb-4 relative z-10">Set maximum allowed consultations per day.</p>
+                            
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 relative z-10">Max Applicants</label>
+                            <div class="flex gap-3 relative z-10">
+                                <input type="number" id="max-applicants" value="5" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white text-[#0b1136] font-black text-lg transition" min="1" max="20">
+                                <button onclick="saveCapacity()" class="bg-[#0b1136] hover:bg-blue-900 text-white px-5 py-2 rounded-xl font-bold transition shadow-md whitespace-nowrap">Save</button>
+                            </div>
+                            <p id="capacity-msg" class="text-green-500 text-xs font-bold mt-3 hidden relative z-10"><i class="fas fa-check-circle mr-1"></i> System capacity updated!</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Col: The Daily Agenda -->
+                    <div class="xl:col-span-2 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col min-h-[500px]">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4 border-b border-gray-100 pb-6">
+                            <div>
+                                <h3 class="font-black text-[#0b1136] text-xl md:text-2xl">Agenda</h3>
+                                <p class="text-sm font-bold text-[#b45309] mt-1" id="display-schedule-date">Select a date</p>
+                            </div>
+                            <div class="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 flex items-center gap-3">
+                                <i class="fas fa-users text-blue-400"></i>
+                                <span class="text-sm font-black text-blue-800 tracking-wide"><span id="daily-count">0</span> / <span id="daily-max">5</span> Booked</span>
+                            </div>
+                        </div>
+
+                        <!-- Schedule List Container -->
+                        <div id="daily-schedule-list" class="space-y-4 flex-grow overflow-y-auto pr-2">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div> <!-- Close view-schedule -->
+
+            <!-- ANALYTICS VIEW -->
+            <div id="view-analytics" class="hidden animate-in fade-in duration-500">
+                <div id="analytics-report-content" class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 pb-8">
+                    <!-- Main Chart -->
+                    <div class="lg:col-span-3 bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6 md:mb-8">
+                            <div>
+                                <h3 class="font-black text-[#0b1136] text-lg md:text-xl">Lead Generation Volume</h3>
+                                <p class="text-xs md:text-sm text-gray-500 font-medium mt-1">Total applications submitted over time</p>
+                            </div>
+                            <select class="hidden sm:block bg-gray-50 border border-gray-200 text-sm font-bold rounded-xl px-4 py-2 outline-none text-gray-600 hover:bg-gray-100 cursor-pointer transition">
+                                <option>Last 6 Months</option>
+                                <option>Last 30 Days</option>
+                                <option>This Year</option>
+                            </select>
+                        </div>
+                        <div class="h-64 md:h-80 w-full">
+                            <canvas id="volumeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart -->
+                    <div class="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="font-black text-[#0b1136] text-lg mb-2">Top Destinations</h3>
+                        <p class="text-xs text-gray-500 font-medium mb-6">Applicant country preferences</p>
+                        <div class="h-56 md:h-64 w-full flex justify-center">
+                            <canvas id="destinationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Status Breakdown -->
+                    <div class="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="font-black text-[#0b1136] text-lg mb-2">Application Pipeline</h3>
+                        <p class="text-xs text-gray-500 font-medium mb-6 md:mb-8">Current status of all active leads</p>
+                        <div class="space-y-6 md:space-y-7">
+                            <div>
+                                <div class="flex justify-between text-sm mb-2"><span class="font-bold text-gray-700">Total Leads Generated</span><span class="text-blue-600 font-black">1,284</span></div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-blue-500 h-2.5 rounded-full transition-all duration-1000" style="width: 100%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-2"><span class="font-bold text-gray-700">In Review (Consultation)</span><span class="text-orange-500 font-black">450</span></div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-orange-500 h-2.5 rounded-full transition-all duration-1000" style="width: 45%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-2"><span class="font-bold text-gray-700">Approved Clients</span><span class="text-green-500 font-black">312</span></div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5"><div class="bg-green-500 h-2.5 rounded-full transition-all duration-1000" style="width: 31%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Feed -->
+                    <div class="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-black text-[#0b1136] text-lg">Recent Activity</h3>
+                            <button class="text-sm font-bold text-smb-gold hover:underline">View All</button>
+                        </div>
+                        <div class="space-y-6 flex-grow">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0 border border-green-100"><i class="fas fa-calendar-check"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Consultation Booked</p>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Carlos Mendoza scheduled a review for tomorrow at 2 PM.</p>
+                                    <p class="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-wider">10 minutes ago</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100"><i class="fas fa-file-invoice"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">New Assessment Submitted</p>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Maria Clara Santos submitted a Canada assessment (Score: 95).</p>
+                                    <p class="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-wider">1 hour ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Close view-analytics -->
+
+        </div>
+    </main>
+
+    <!-- Client Detail Modal -->
+    <div id="clientModal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 px-2 sm:px-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[95vh] md:max-h-[90vh]" id="modalContent">
+            <!-- Modal Header -->
+            <div class="bg-[#0b1136] px-5 py-4 md:px-8 md:py-6 text-white flex justify-between items-center relative overflow-hidden flex-shrink-0">
+                <div class="absolute right-0 top-0 w-32 h-32 md:w-48 md:h-48 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+                <div class="relative z-10">
+                    <p class="text-[10px] md:text-xs font-bold text-blue-300 uppercase tracking-widest mb-0.5 md:mb-1">Applicant Profile</p>
+                    <h2 class="text-xl md:text-3xl font-black truncate max-w-[200px] sm:max-w-md" id="modal-name">Applicant Name</h2>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition relative z-10 shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-5 md:p-8 grid md:grid-cols-3 gap-6 md:gap-8 overflow-y-auto">
+                <div class="md:col-span-1 space-y-4 md:space-y-6">
+                    <div class="bg-gray-50 p-4 md:p-5 rounded-2xl border border-gray-200 text-center">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 md:mb-2">Total Score</p>
+                        <p class="text-4xl md:text-5xl font-black text-[#b45309]" id="modal-score">0</p>
+                        <p class="text-xs md:text-sm font-medium text-gray-500 mt-1">out of 100</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
+                        <div>
+                            <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 md:mb-2">Tracking ID</p>
+                            <p class="font-mono font-bold text-sm md:text-lg text-[#0b1136] bg-gray-100 py-1.5 md:py-2 px-3 md:px-4 rounded-lg inline-block break-all" id="modal-id">SMB-XXXX</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 md:mb-2">Target Country</p>
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <span class="text-2xl md:text-3xl" id="modal-flag">🇨🇦</span>
+                                <span class="font-bold text-base md:text-lg text-gray-800" id="modal-country">Canada</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-4 md:space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        <div class="bg-white p-3 md:p-4 rounded-xl border border-gray-200">
+                            <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
+                            <p class="text-sm md:text-base font-semibold text-gray-800 truncate" id="modal-email">email@example.com</p>
+                        </div>
+                        <div class="bg-white p-3 md:p-4 rounded-xl border border-gray-200">
+                            <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Appointment</p>
+                            <p class="text-sm md:text-base font-black text-[#b45309] truncate" id="modal-appointment">Not Scheduled</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 md:p-5 rounded-xl border border-gray-200">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Admin Controls</p>
+                        <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1.5 md:mb-2">Update Application Status</label>
+                        <select class="w-full p-2.5 md:p-3 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base font-medium text-gray-800" id="modal-status-select">
+                            <option value="New">New Applicant (Needs Review)</option>
+                            <option value="Review">In Review (Consultation Booked)</option>
+                            <option value="Approved">Approved / Retained Client</option>
+                            <option value="Rejected">Not Eligible / Rejected</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4 border-t border-gray-100">
+                        <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 md:py-3 rounded-xl transition text-sm md:text-base">
+                            <i class="fas fa-envelope mr-2"></i> Email Client
+                        </button>
+                        <button onclick="closeModal()" class="flex-1 bg-[#0b1136] hover:bg-blue-900 text-white font-bold py-2.5 md:py-3 rounded-xl shadow-lg transition text-sm md:text-base">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+                <!-- Assessment Answers Section -->
+                <div class="md:col-span-3 mt-0 md:mt-4">
+                    <div class="bg-gray-50 p-4 md:p-6 rounded-2xl border border-gray-200">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 md:mb-4"><i class="fas fa-clipboard-list mr-1"></i> Assessment Responses</p>
+                        <div id="modal-assessment-details" class="space-y-2 md:space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dynamic dates to ensure the demo always has appointments "Today" and "Tomorrow"
+        const today = new Date();
+        const t_year = today.getFullYear();
+        const t_month = String(today.getMonth() + 1).padStart(2, '0');
+        const t_day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${t_year}-${t_month}-${t_day}`;
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tmrwStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+        // Extended Mock Data with Scheduling Info
+        const mockApplicants = [
+            { 
+                id: "SMB-A9F2K1", name: "Maria Clara Santos", email: "maria.santos@gmail.com", country: "Canada", flag: "🇨🇦", score: 95, status: "Review",
+                appointmentDate: todayStr, appointmentTime: "09:00 AM",
+                assessment: [
+                    { q: "1. What is your current age?", a: "18 - 35 years old (Max Points)" }, 
+                    { q: "2. What is your highest level of education?", a: "Master's / Ph.D." },
+                    { q: "3. How many years of skilled work experience do you have?", a: "3 or more years" },
+                    { q: "4. What is your English or French language proficiency?", a: "CLB 9 or higher (Advanced/Fluent)" },
+                    { q: "5. Do you have a valid job offer in Canada or a Provincial Nomination?", a: "No, applying independently" }
+                ]
+            },
+            { 
+                id: "SMB-X7B4M9", name: "Carlos Mendoza", email: "carlos.m@yahoo.com", country: "Australia", flag: "🇦🇺", score: 65, status: "Review",
+                appointmentDate: todayStr, appointmentTime: "02:30 PM",
+                assessment: [
+                    { q: "1. What is your current age?", a: "33 - 39 years old" },
+                    { q: "2. Have you completed a formal Skills Assessment for your occupation?", a: "No, but my occupation is on the skills list" },
+                    { q: "3. How many years of overseas skilled employment do you have?", a: "3-7 years" },
+                    { q: "4. What is your English proficiency level?", a: "Competent / None yet" },
+                    { q: "5. Do you have state or territory nomination?", a: "No / Applying independently (Subclass 189)" }
+                ]
+            },
+            { 
+                id: "SMB-P2L8Q5", name: "Elena Reyes", email: "elena.reyes@hotmail.com", country: "United Kingdom", flag: "🇬🇧", score: 85, status: "Approved",
+                appointmentDate: tmrwStr, appointmentTime: "10:30 AM",
+                assessment: [
+                    { q: "1. Do you have a valid Certificate of Sponsorship (Job Offer) from a UK employer?", a: "Yes, I have a sponsorship" },
+                    { q: "2. Does your prospective salary meet the UK threshold (£38,700/yr)?", a: "Yes, it meets/exceeds the threshold" },
+                    { q: "3. Do you have sufficient personal savings to support yourself?", a: "My sponsor will certify my maintenance" },
+                    { q: "4. Have you passed an approved English language test (e.g., IELTS UKVI)?", a: "Yes, B1 level or higher" },
+                    { q: "5. Do you have any previous UK visa refusals?", a: "None (Clean Record)" }
+                ]
+            },
+            { 
+                id: "SMB-W5N3C2", name: "Joseph Bautista", email: "joseph.b@gmail.com", country: "New Zealand", flag: "🇳🇿", score: 45, status: "New",
+                appointmentDate: "", appointmentTime: "",
+                assessment: [
+                    { q: "1. What is your current age?", a: "36 years old and above" },
+                    { q: "2. What is the highest level of education you have attained?", a: "High School Graduate / Undergraduate" },
+                    { q: "3. How would you finance your visa application?", a: "Looking for financing" },
+                    { q: "4. What English as a second language exams have you taken?", a: "None of the above (Willing to review)" },
+                    { q: "5. Do you have any unlawful visa records?", a: "None (Clean Record)" }
+                ]
+            },
+            { 
+                id: "SMB-T8R1J7", name: "Ana Patricia Lim", email: "ana.lim@outlook.com", country: "Canada", flag: "🇨🇦", score: 80, status: "New",
+                appointmentDate: "", appointmentTime: "",
+                assessment: [
+                    { q: "1. What is your current age?", a: "18 - 35 years old (Max Points)" },
+                    { q: "2. What is your highest level of education?", a: "Bachelor's Degree / Two or more certificates" },
+                    { q: "3. How many years of skilled work experience do you have?", a: "1 - 2 years" },
+                    { q: "4. What is your English or French language proficiency?", a: "CLB 7-8 (Intermediate)" },
+                    { q: "5. Do you have a valid job offer in Canada or a Provincial Nomination?", a: "No, applying independently" }
+                ]
+            }
+        ];
+
+        // Formatters
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'New': return '<span class="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200"><i class="fas fa-sparkles mr-1 hidden sm:inline"></i>New</span>';
+                case 'Review': return '<span class="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200"><i class="fas fa-calendar-check mr-1 hidden sm:inline"></i>Booked</span>';
+                case 'Approved': return '<span class="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-green-50 text-green-600 border border-green-200"><i class="fas fa-check mr-1 hidden sm:inline"></i>Approved</span>';
+                default: return `<span class="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">${status}</span>`;
+            }
+        }
+        function getScoreColor(score) {
+            if(score >= 80) return "text-emerald-600";
+            if(score >= 50) return "text-amber-600";
+            return "text-red-500";
+        }
+
+        // Table Render & Filter Logic
+        let currentSort = { column: 'date', direction: 'desc' };
+
+        function applyFiltersAndSort() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value;
+            const countryFilter = document.getElementById("countryFilter").value;
+
+            let filtered = mockApplicants.filter(app => {
+                const matchesSearch = app.name.toLowerCase().includes(searchTerm) || app.id.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === "All" || app.status === statusFilter;
+                const matchesCountry = countryFilter === "All" || app.country === countryFilter;
+                return matchesSearch && matchesStatus && matchesCountry;
+            });
+
+            filtered.sort((a, b) => {
+                let valA = a[currentSort.column]; let valB = b[currentSort.column];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable(filtered);
+            document.getElementById('pagination-text').innerHTML = `Showing <span class="font-bold text-gray-900">${filtered.length > 0 ? 1 : 0} to ${filtered.length < 5 ? filtered.length : 5}</span> of ${filtered.length} entries`;
+        }
+
+        function toggleSort(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column; currentSort.direction = 'asc';
+            }
+            const columns = ['name', 'id', 'country', 'score', 'status'];
+            columns.forEach(col => {
+                const icon = document.getElementById(`sort-${col}`);
+                if (icon) {
+                    icon.className = 'fas fa-sort ml-1 opacity-30';
+                    if (col === currentSort.column) icon.className = currentSort.direction === 'asc' ? 'fas fa-sort-up ml-1 text-[#0b1136] opacity-100' : 'fas fa-sort-down ml-1 text-[#0b1136] opacity-100';
+                }
+            });
+            applyFiltersAndSort();
+        }
+
+        function renderTable(dataToRender) {
+            const tbody = document.getElementById('applicant-table-body');
+            tbody.innerHTML = '';
+            if (dataToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 md:px-8 py-10 text-center text-gray-500 font-medium">No applications match your filters.</td></tr>`;
+                return;
+            }
+            dataToRender.forEach((app) => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-100 hover:bg-blue-50/50 transition cursor-pointer group";
+                row.innerHTML = `
+                    <td class="px-4 md:px-8 py-4 md:py-5 whitespace-nowrap">
+                        <div class="flex items-center gap-3 md:gap-4">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#0b1136] text-white flex items-center justify-center font-bold text-xs md:text-sm shadow-md shrink-0">${app.name.charAt(0)}</div>
+                            <div><p class="font-bold text-[#0b1136] group-hover:text-blue-700 transition text-sm md:text-base">${app.name}</p><p class="text-[10px] md:text-xs text-gray-500">${app.email}</p></div>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-8 py-4 md:py-5 font-mono text-xs md:text-sm font-bold text-gray-500 whitespace-nowrap">${app.id}</td>
+                    <td class="px-4 md:px-8 py-4 md:py-5 font-medium text-gray-800 whitespace-nowrap text-sm md:text-base"><span class="mr-2 text-lg">${app.flag}</span>${app.country}</td>
+                    <td class="px-4 md:px-8 py-4 md:py-5 font-black text-base md:text-lg ${getScoreColor(app.score)} whitespace-nowrap">${app.score}</td>
+                    <td class="px-4 md:px-8 py-4 md:py-5 whitespace-nowrap">${getStatusBadge(app.status)}</td>
+                    <td class="px-4 md:px-8 py-4 md:py-5 text-right whitespace-nowrap">
+                        <button onclick="openModal('${app.id}')" class="text-[#0b1136] font-bold border border-gray-200 px-3 py-1.5 md:px-5 md:py-2 rounded-lg hover:bg-[#0b1136] hover:text-white hover:border-[#0b1136] transition shadow-sm text-xs md:text-sm">View Details</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // --- NEW: SCHEDULE LOGIC ---
+        function renderDailySchedule() {
+            const dateInput = document.getElementById('schedule-date-picker').value;
+            const displayDate = document.getElementById('display-schedule-date');
+            const list = document.getElementById('daily-schedule-list');
+            const maxCap = document.getElementById('max-applicants').value;
+            
+            if(!dateInput) return;
+            
+            const selectedDateObj = new Date(dateInput + "T00:00:00");
+            displayDate.innerText = selectedDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
+            
+            const appointments = mockApplicants.filter(app => app.appointmentDate === dateInput);
+            
+            // Update capacity numbers
+            document.getElementById('daily-count').innerText = appointments.length;
+            document.getElementById('daily-max').innerText = maxCap;
+            
+            if(appointments.length === 0) {
+                list.innerHTML = `<div class="text-center py-16 text-gray-400 font-medium"><i class="fas fa-calendar-times text-5xl mb-4 opacity-20"></i><br>No formal consultations scheduled for this date.</div>`;
+                return;
+            }
+            
+            // Sort by time (AM/PM simple sort)
+            appointments.sort((a,b) => {
+                const timeA = new Date("1970/01/01 " + a.appointmentTime);
+                const timeB = new Date("1970/01/01 " + b.appointmentTime);
+                return timeA - timeB;
+            });
+
+            list.innerHTML = appointments.map(app => `
+                <div class="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 hover:shadow-md transition cursor-pointer group" onclick="openModal('${app.id}')">
+                    <div class="w-20 font-black text-[#b45309] text-sm text-right shrink-0">${app.appointmentTime}</div>
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-[#0b1136] flex items-center justify-center font-bold shrink-0 border border-blue-200">${app.name.charAt(0)}</div>
+                    <div class="flex-grow">
+                        <p class="font-bold text-[#0b1136] group-hover:text-blue-600 transition">${app.name}</p>
+                        <p class="text-xs text-gray-500 font-medium">${app.flag} ${app.country} Visa • <span class="font-mono">${app.id}</span></p>
+                    </div>
+                    <button class="text-gray-300 group-hover:text-blue-500 pr-2 transition"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function saveCapacity() {
+            const msg = document.getElementById('capacity-msg');
+            msg.classList.remove('hidden');
+            renderDailySchedule(); // Refresh counter display
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        // Sidebar & Navigation
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.nav-link').forEach(link => { link.className = 'nav-link flex items-center gap-3 p-3 text-gray-300 hover:bg-white/5 hover:text-white rounded-xl font-medium transition'; });
+            const activeLink = document.getElementById(`nav-${viewName}`);
+            if(activeLink) activeLink.className = 'nav-link flex items-center gap-3 p-3 bg-white/10 text-[#b45309] rounded-xl font-bold transition';
+
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+
+            document.getElementById('view-applicants').classList.add('hidden');
+            document.getElementById('view-analytics').classList.add('hidden');
+            document.getElementById('view-schedule').classList.add('hidden');
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+            const title = document.getElementById('page-title');
+            const search = document.getElementById('search-container');
+            const exportBtn = document.getElementById('export-btn-container');
+
+            if (viewName === 'analytics') {
+                title.innerText = 'Analytics & Reports'; search.classList.add('hidden'); exportBtn.classList.remove('hidden');
+            } else if (viewName === 'schedule') {
+                title.innerText = 'Appointment Schedule'; search.classList.add('hidden'); exportBtn.classList.add('hidden');
+                
+                // Initialize today's date if empty
+                const datePicker = document.getElementById('schedule-date-picker');
+                if (!datePicker.value) { datePicker.value = todayStr; }
+                renderDailySchedule();
+            } else {
+                title.innerText = 'Applicant Database'; search.classList.remove('hidden'); exportBtn.classList.add('hidden');
+            }
+        }
+
+        // Modal Logic
+        const modal = document.getElementById('clientModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function openModal(id) {
+            const app = mockApplicants.find(a => a.id === id);
+            if(!app) return;
+            
+            document.getElementById('modal-name').innerText = app.name;
+            document.getElementById('modal-id').innerText = app.id;
+            document.getElementById('modal-score').innerText = app.score;
+            document.getElementById('modal-score').className = `text-4xl md:text-5xl font-black ${getScoreColor(app.score)}`;
+            document.getElementById('modal-country').innerText = app.country;
+            document.getElementById('modal-flag').innerText = app.flag;
+            document.getElementById('modal-email').innerText = app.email;
+            
+            // Format Modal Appointment Details
+            const aptEl = document.getElementById('modal-appointment');
+            if (app.appointmentDate && app.appointmentTime) {
+                const dateObj = new Date(app.appointmentDate + "T00:00:00");
+                aptEl.innerText = `${dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'})} @ ${app.appointmentTime}`;
+                aptEl.classList.replace('text-gray-400', 'text-[#b45309]');
+            } else {
+                aptEl.innerText = "Not Scheduled";
+                aptEl.classList.replace('text-[#b45309]', 'text-gray-400');
+            }
+
+            document.getElementById('modal-status-select').value = app.status;
+
+            const assessmentContainer = document.getElementById('modal-assessment-details');
+            if (app.assessment && app.assessment.length > 0) {
+                assessmentContainer.innerHTML = app.assessment.map(item => `
+                    <div class="bg-white p-3 md:p-4 rounded-xl border border-gray-100 flex flex-col md:flex-row md:justify-between md:items-center gap-1.5 md:gap-2 shadow-sm">
+                        <span class="text-xs md:text-sm font-medium text-gray-500 md:w-1/3">${item.q}</span>
+                        <span class="text-xs md:text-sm font-bold text-[#0b1136] md:w-2/3 md:text-right">${item.a}</span>
+                    </div>`).join('');
+            } else { assessmentContainer.innerHTML = `<p class="text-sm text-gray-500 italic px-2">No assessment details recorded.</p>`; }
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        }
+
+        // Login Logic
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            
+            setTimeout(() => {
+                const overlay = document.getElementById('admin-login-overlay');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    applyFiltersAndSort(); 
+                    initCharts(); 
+                }, 500);
+            }, 800);
+        }
+
+        // Chart & Export
+        let chartsInitialized = false;
+        function initCharts() {
+            if (chartsInitialized) return;
+            const ctxVol = document.getElementById('volumeChart').getContext('2d');
+            new Chart(ctxVol, { type: 'line', data: { labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'], datasets: [{ label: 'New Applications', data: [120, 190, 150, 220, 280, 312], borderColor: '#0b1136', backgroundColor: 'rgba(11, 17, 54, 0.08)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#b45309', pointBorderColor: '#ffffff', pointRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { borderDash: [4, 4], color: '#f1f5f9' } }, x: { grid: { display: false } } } } });
+            const ctxDest = document.getElementById('destinationChart').getContext('2d');
+            new Chart(ctxDest, { type: 'doughnut', data: { labels: ['Canada', 'UK', 'Australia', 'Other'], datasets: [{ data: [45, 25, 20, 10], backgroundColor: ['#0b1136', '#b45309', '#3b82f6', '#cbd5e1'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: 'Inter', size: 12 } } } } } });
+            chartsInitialized = true;
+        }
+
+        function exportAnalyticsToPDF() {
+            const btn = document.querySelector('#export-btn-container button');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            const element = document.getElementById('analytics-report-content');
+            const opt = { margin: 0.5, filename: 'SMB_Consultancy_Analytics_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f8fafc' }, jsPDF: { unit: 'in', format: 'a3', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save().then(() => { btn.innerHTML = originalContent; });
+        }
+    </script>
+</body>
+</html>

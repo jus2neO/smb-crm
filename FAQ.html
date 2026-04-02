@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - SMB International Visa Consultancy</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Tailwind Configuration for Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        smb: {
+                            blue: '#0b1136',
+                            gold: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --smb-blue: #0b1136;
+            --smb-gold: #b45309;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .nav-logo {
+            height: 56px;
+            width: auto;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .faq-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .dark .faq-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+
+    <!-- Script to prevent Dark Mode flash on load -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 flex flex-col min-h-screen">
+
+    <!-- Navigation -->
+    <nav
+        class="bg-white dark:bg-slate-900/95 backdrop-blur-md shadow-md dark:shadow-slate-900/20 dark:border-b dark:border-slate-800 sticky top-0 z-50 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html">
+                        <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" alt="SMB Logo"
+                            class="nav-logo dark:brightness-0 dark:invert transition-all"
+                            onerror="this.src='smb-logo-v3.png'">
+                    </a>
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="index.html#about"
+                        class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">About
+                        Us</a>
+                    <a href="index.html#services"
+                        class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Services</a>
+                    <a href="index.html#gallery"
+                        class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Gallery</a>
+                    <a href="faq.html"
+                        class="text-smb-blue dark:text-blue-400 font-bold transition cursor-pointer">FAQ</a>
+                    <a href="index.html#contact"
+                        class="text-gray-600 dark:text-gray-300 hover:text-smb-blue dark:hover:text-blue-400 font-semibold transition cursor-pointer">Contact</a>
+
+                    <!-- Dark Mode Toggle Button -->
+                    <button onclick="toggleDarkMode()"
+                        class="ml-4 text-gray-500 dark:text-gray-400 hover:text-smb-blue dark:hover:text-blue-400 bg-gray-50 dark:bg-slate-800 p-2.5 rounded-full shadow-sm border border-gray-200 dark:border-slate-700 transition">
+                        <i id="theme-icon" class="fas fa-moon text-lg w-5 h-5 flex items-center justify-center"></i>
+                    </button>
+
+                    <a href="portal.html"
+                        class="bg-smb-blue dark:bg-blue-600 text-white px-6 py-2.5 rounded-full hover:bg-blue-800 dark:hover:bg-blue-700 transition shadow-lg flex items-center gap-2 font-semibold ml-2">
+                        <i class="fas fa-user-circle"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FAQ Main Section -->
+    <main class="flex-grow py-20 bg-gray-50 dark:bg-slate-900 transition-colors">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-smb-gold font-bold tracking-widest uppercase mb-2">Have Questions?</h2>
+                <h1 class="text-4xl md:text-5xl font-bold text-smb-blue dark:text-white mb-4">Canada Visa FAQs</h1>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Everything you need to know about applying for a
+                    visa to Canada.</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
+                    <button
+                        class="w-full px-6 py-5 text-left font-bold text-smb-blue dark:text-white flex justify-between items-center focus:outline-none faq-toggle group hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <span class="text-lg">What are the basic requirements for a Canada Student Visa?</span>
+                        <i
+                            class="fas fa-chevron-down text-gray-400 group-hover:text-smb-gold transition-transform duration-300"></i>
+                    </button>
+                    <div
+                        class="px-6 pb-5 hidden faq-content text-gray-600 dark:text-gray-300 text-base leading-relaxed border-t border-gray-100 dark:border-slate-700 pt-4">
+                        To apply for a Canada Student Visa (Study Permit), you generally need an acceptance letter from
+                        a Designated Learning Institution (DLI), a valid passport, and proof of sufficient financial
+                        support to cover your tuition and living expenses. You may also need to provide a letter of
+                        explanation and medical exams.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
+                    <button
+                        class="w-full px-6 py-5 text-left font-bold text-smb-blue dark:text-white flex justify-between items-center focus:outline-none faq-toggle group hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <span class="text-lg">Can I work in Canada while studying?</span>
+                        <i
+                            class="fas fa-chevron-down text-gray-400 group-hover:text-smb-gold transition-transform duration-300"></i>
+                    </button>
+                    <div
+                        class="px-6 pb-5 hidden faq-content text-gray-600 dark:text-gray-300 text-base leading-relaxed border-t border-gray-100 dark:border-slate-700 pt-4">
+                        Yes, most international students can work in Canada. You are generally allowed to work up to 20
+                        hours per week during regular school terms, and full-time during scheduled academic breaks (like
+                        winter and summer holidays).
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
+                    <button
+                        class="w-full px-6 py-5 text-left font-bold text-smb-blue dark:text-white flex justify-between items-center focus:outline-none faq-toggle group hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <span class="text-lg">How long does the Canada visa application process take?</span>
+                        <i
+                            class="fas fa-chevron-down text-gray-400 group-hover:text-smb-gold transition-transform duration-300"></i>
+                    </button>
+                    <div
+                        class="px-6 pb-5 hidden faq-content text-gray-600 dark:text-gray-300 text-base leading-relaxed border-t border-gray-100 dark:border-slate-700 pt-4">
+                        Processing times can vary significantly depending on your location, the type of visa, and the
+                        time of year. Generally, study permit applications can take anywhere from 4 to 12 weeks. We
+                        recommend starting the process well in advance of your planned travel date.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
+                    <button
+                        class="w-full px-6 py-5 text-left font-bold text-smb-blue dark:text-white flex justify-between items-center focus:outline-none faq-toggle group hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <span class="text-lg">Can I bring my spouse or partner to Canada?</span>
+                        <i
+                            class="fas fa-chevron-down text-gray-400 group-hover:text-smb-gold transition-transform duration-300"></i>
+                    </button>
+                    <div
+                        class="px-6 pb-5 hidden faq-content text-gray-600 dark:text-gray-300 text-base leading-relaxed border-t border-gray-100 dark:border-slate-700 pt-4">
+                        Yes! If you are studying full-time at an eligible DLI, your spouse or common-law partner may be
+                        eligible to apply for an open work permit, allowing them to work for any employer in Canada
+                        while you study.
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-smb-blue dark:bg-slate-800 text-white rounded-2xl p-8 md:p-10 mt-16 text-center shadow-lg border border-transparent dark:border-slate-700">
+                <h3 class="text-2xl font-bold mb-3">Still have questions about your specific situation?</h3>
+                <p class="text-blue-100 mb-6">Find out exactly what you need with our free points-based eligibility
+                    checker.</p>
+                <a href="portal.html?mode=register"
+                    class="bg-smb-gold hover:bg-amber-600 text-white px-8 py-3 rounded-full font-bold transition shadow-lg inline-block">
+                    Take Our Eligibility Assessment
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 dark:bg-slate-950 text-white py-12 transition-colors mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex flex-col items-center gap-6">
+                <img src="https://i.postimg.cc/d1RpQnwF/smb-logo-v3.png" alt="SMB Logo"
+                    class="h-16 mb-4 filter brightness-0 invert opacity-90" onerror="this.src='smb-logo-v3.png'">
+                <div class="flex gap-8 text-2xl mb-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube"></i></a>
+                </div>
+                <div class="border-t border-white/5 pt-8 w-full max-w-lg">
+                    <p class="text-gray-500 dark:text-gray-600 text-sm">© 2025 SMB International. All rights reserved.
+                    </p>
+                    <p
+                        class="mt-4 text-smb-gold dark:text-amber-600 italic uppercase tracking-[0.3em] font-black text-xs">
+                        "Improving Lives of Many"</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Dark Mode Logic
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+            }
+
+            // FAQ Accordion Logic
+            const toggles = document.querySelectorAll('.faq-toggle');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const content = toggle.nextElementSibling;
+                    const icon = toggle.querySelector('i');
+
+                    // Close other open faqs
+                    document.querySelectorAll('.faq-content').forEach(c => {
+                        if (c !== content) c.classList.add('hidden');
+                    });
+                    document.querySelectorAll('.faq-toggle i').forEach(i => {
+                        if (i !== icon) i.classList.remove('rotate-180');
+                    });
+
+                    // Toggle current clicked faq
+                    content.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
