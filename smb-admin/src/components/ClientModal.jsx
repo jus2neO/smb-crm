@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const STATUS_OPTIONS = [
   { value: 'New Applicant', label: 'New Applicant (Pending Review)' },
@@ -12,6 +13,8 @@ const STATUS_OPTIONS = [
 export default function ClientModal({ client, onClose, onSave }) {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [openingFile, setOpeningFile] = useState('');
+  const [previewFile, setPreviewFile] = useState(null); // { url, kind: 'pdf' | 'image', label }
 
   useEffect(() => {
     if (client) setSelectedStatus(client.status);
@@ -20,7 +23,7 @@ export default function ClientModal({ client, onClose, onSave }) {
   if (!client) return null;
 
   const initials = client.firstName.charAt(0) + client.lastName.charAt(0);
-  const hasAppointment = client.status === 'Consultation Scheduled';
+  const hasAppointment = Boolean(client.appointmentDate);
 
   const handleSave = () => {
     onSave(client.id, selectedStatus);
@@ -33,6 +36,26 @@ export default function ClientModal({ client, onClose, onSave }) {
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose();
+  };
+
+  const handleViewFile = async (path, label) => {
+    setOpeningFile(label);
+    const { data, error } = await supabase.storage.from('applicant-files').createSignedUrl(path, 300);
+    setOpeningFile('');
+    if (error || !data?.signedUrl) {
+      alert(`Could not open the ${label}: ` + (error?.message || 'file not found'));
+      return;
+    }
+
+    const ext = path.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      setPreviewFile({ url: data.signedUrl, kind: 'pdf', label });
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      setPreviewFile({ url: data.signedUrl, kind: 'image', label });
+    } else {
+      // Word docs etc. can't be previewed inline by the browser — open/download directly.
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -78,13 +101,59 @@ export default function ClientModal({ client, onClose, onSave }) {
                   <div className="flex items-center gap-3">
                     <i className="fas fa-phone text-gray-400 w-4"></i>
                     <span className="font-medium text-gray-800">{client.phone}</span>
+                    {client.landline && <span className="text-gray-400">/ {client.landline}</span>}
                   </div>
                   <div className="flex items-center gap-3">
                     <i className="fas fa-map-marker-alt text-gray-400 w-4"></i>
-                    <span className="font-medium text-gray-800">{client.city}</span>
+                    <span className="font-medium text-gray-800">
+                      {client.completeAddress ? `${client.completeAddress}, ` : ''}{client.city}{client.province ? `, ${client.province}` : ''}
+                    </span>
                   </div>
+                  {client.birthDate && (
+                    <div className="flex items-center gap-3">
+                      <i className="fas fa-birthday-cake text-gray-400 w-4"></i>
+                      <span className="font-medium text-gray-800">{client.birthDate} · {client.gender}</span>
+                    </div>
+                  )}
+                  {client.positionApplied && (
+                    <div className="flex items-center gap-3">
+                      <i className="fas fa-briefcase text-gray-400 w-4"></i>
+                      <span className="font-medium text-gray-800">Applying for: {client.positionApplied}</span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Documents */}
+              {(client.resumePath || client.photoPath) && (
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Documents</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {client.resumePath && (
+                      <button
+                        onClick={() => handleViewFile(client.resumePath, 'resume')}
+                        disabled={openingFile === 'resume'}
+                        className="flex items-center gap-2 text-sm font-bold border border-gray-200 px-4 py-2 rounded-xl hover:border-[#0b1136] transition disabled:opacity-50"
+                        style={{ color: 'var(--smb-blue)' }}
+                      >
+                        <i className={`fas ${openingFile === 'resume' ? 'fa-spinner fa-spin' : 'fa-file-alt'}`}></i>
+                        View Resume
+                      </button>
+                    )}
+                    {client.photoPath && (
+                      <button
+                        onClick={() => handleViewFile(client.photoPath, 'photo')}
+                        disabled={openingFile === 'photo'}
+                        className="flex items-center gap-2 text-sm font-bold border border-gray-200 px-4 py-2 rounded-xl hover:border-[#0b1136] transition disabled:opacity-50"
+                        style={{ color: 'var(--smb-blue)' }}
+                      >
+                        <i className={`fas ${openingFile === 'photo' ? 'fa-spinner fa-spin' : 'fa-image'}`}></i>
+                        View Photo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Assessment */}
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
@@ -105,8 +174,62 @@ export default function ClientModal({ client, onClose, onSave }) {
                   <p className="text-xs font-bold text-gray-600">Background Data:</p>
                   <p className="text-sm"><span className="text-gray-500">Work Exp:</span> <span className="font-medium">{client.work}</span></p>
                   <p className="text-sm"><span className="text-gray-500">Civil Status:</span> <span className="font-medium">{client.civil}</span></p>
+                  {client.referral && <p className="text-sm"><span className="text-gray-500">Found us via:</span> <span className="font-medium">{client.referral}</span></p>}
                 </div>
               </div>
+
+              {/* Assessment Answers */}
+              {client.answers && client.answers.length > 0 && (
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i className="fas fa-list-check"></i> Assessment Answers
+                  </h3>
+                  <div className="space-y-3">
+                    {client.answers.map((a) => (
+                      <div key={a.id} className="text-sm border-l-2 border-gray-100 pl-3">
+                        <p className="text-gray-500">{a.question}</p>
+                        <p className="font-bold text-gray-800">{a.answer} <span className="font-normal text-gray-400">({a.points} pts)</span></p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Education */}
+              {client.education && client.education.length > 0 && (
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i className="fas fa-graduation-cap"></i> Education
+                  </h3>
+                  <div className="space-y-3">
+                    {client.education.map((edu, i) => (
+                      <div key={i} className="text-sm border-l-2 border-gray-100 pl-3">
+                        <p className="font-bold text-gray-800">{edu.school}</p>
+                        <p className="text-gray-500">{edu.level}{edu.course ? ` — ${edu.course}` : ''}</p>
+                        <p className="text-xs text-gray-400">{edu.dateFrom} to {edu.dateTo || 'Present'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Work History */}
+              {client.workHistory && client.workHistory.length > 0 && (
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i className="fas fa-suitcase"></i> Work History
+                  </h3>
+                  <div className="space-y-3">
+                    {client.workHistory.map((w, i) => (
+                      <div key={i} className="text-sm border-l-2 border-gray-100 pl-3">
+                        <p className="font-bold text-gray-800">{w.position} <span className="font-normal text-gray-500">— {w.company}</span></p>
+                        {w.description && <p className="text-gray-500">{w.description}</p>}
+                        <p className="text-xs text-gray-400">{w.country} · {w.dateFrom} to {w.dateTo || 'Present'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right: Admin Actions */}
@@ -141,7 +264,8 @@ export default function ClientModal({ client, onClose, onSave }) {
                 {hasAppointment ? (
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                     <p className="text-sm text-blue-800 font-bold flex items-center gap-2">
-                      <i className="fas fa-video"></i> Zoom Call: Oct 25, 2:00 PM
+                      <i className={`fas ${client.appointmentType === 'Online' ? 'fa-video' : 'fa-handshake'}`}></i>
+                      {client.appointmentType === 'Online' ? 'Online Appointment' : client.appointmentType}: {client.appointmentDate} at {client.appointmentTime}
                     </p>
                     <p className="text-xs text-blue-500 mt-1 ml-6">Booked by client</p>
                   </div>
@@ -158,6 +282,46 @@ export default function ClientModal({ client, onClose, onSave }) {
           </div>
         </div>
       </div>
+
+      {previewFile && (
+        <div
+          className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4"
+          onClick={() => setPreviewFile(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 flex justify-between items-center border-b border-gray-100 flex-shrink-0">
+              <h3 className="font-bold text-gray-800 capitalize">{previewFile.label} Preview</h3>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewFile.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold px-3 py-1.5 rounded-lg border border-gray-200 hover:border-[#0b1136] transition"
+                  style={{ color: 'var(--smb-blue)' }}
+                >
+                  <i className="fas fa-external-link-alt mr-1"></i> Open in New Tab
+                </a>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 bg-gray-100 overflow-auto flex items-center justify-center">
+              {previewFile.kind === 'pdf' ? (
+                <iframe src={previewFile.url} title={`${previewFile.label} preview`} className="w-full h-full" />
+              ) : (
+                <img src={previewFile.url} alt={`${previewFile.label} preview`} className="max-w-full max-h-full object-contain" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

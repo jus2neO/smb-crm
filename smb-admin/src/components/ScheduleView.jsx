@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+
 function getStatusBadge(status) {
   const map = {
     'Consultation Scheduled': 'bg-blue-100 text-blue-800 border border-blue-200',
@@ -10,6 +13,60 @@ function getStatusBadge(status) {
   return map[status] || 'bg-gray-100 text-gray-700';
 }
 
+function DailyLimitSetting() {
+  const [limit, setLimit] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from('appointment_settings').select('daily_limit').eq('id', true).single()
+      .then(({ data }) => {
+        setLimit(data?.daily_limit ?? 5);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('appointment_settings').update({ daily_limit: Number(limit) }).eq('id', true);
+    setSaving(false);
+    if (error) {
+      alert('Could not save: ' + error.message);
+      return;
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Daily Appointment Limit</p>
+        <p className="text-sm text-gray-500">Max consultations clients can book per day. Full days are greyed out on the client portal.</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <input
+          type="number"
+          min="1"
+          value={limit}
+          disabled={loading}
+          onChange={(e) => setLimit(e.target.value)}
+          className="w-20 p-2.5 border border-gray-200 rounded-xl bg-gray-50 font-bold text-center outline-none focus:border-[#0b1136]"
+        />
+        <button
+          onClick={handleSave}
+          disabled={loading || saving}
+          className={`px-5 py-2.5 rounded-xl font-bold text-sm text-white transition ${saved ? 'bg-green-500' : 'hover:bg-blue-900'}`}
+          style={!saved ? { backgroundColor: 'var(--smb-blue)' } : {}}
+        >
+          {saved ? '✓ Saved' : saving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ScheduleView({ clients }) {
   const scheduled = clients.filter(c => c.appointmentDate);
 
@@ -19,6 +76,8 @@ export default function ScheduleView({ clients }) {
         <h2 className="text-2xl font-black" style={{ color: 'var(--smb-blue)' }}>Appointment Schedule</h2>
         <p className="text-gray-500 text-sm mt-1">All upcoming client consultations</p>
       </div>
+
+      <DailyLimitSetting />
 
       {/* Summary Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -33,9 +92,9 @@ export default function ScheduleView({ clients }) {
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Zoom Calls</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Online</p>
             <h3 className="text-3xl font-black text-purple-500">
-              {scheduled.filter(c => c.appointmentType === 'Zoom').length}
+              {scheduled.filter(c => c.appointmentType === 'Online').length}
             </h3>
           </div>
           <div className="w-14 h-14 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center text-2xl">
@@ -71,7 +130,7 @@ export default function ScheduleView({ clients }) {
         ) : (
           <div className="divide-y divide-gray-100">
             {scheduled.map((client) => {
-              const isZoom = client.appointmentType === 'Zoom';
+              const isOnline = client.appointmentType === 'Online';
               return (
                 <div key={client.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition group">
                   {/* Left: Date block */}
@@ -109,13 +168,13 @@ export default function ScheduleView({ clients }) {
                   <div className="text-right flex-shrink-0">
                     <div
                       className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold mb-2 ${
-                        isZoom
+                        isOnline
                           ? 'bg-purple-100 text-purple-700'
                           : 'bg-emerald-100 text-emerald-700'
                       }`}
                     >
-                      <i className={`fas ${isZoom ? 'fa-video' : 'fa-handshake'}`}></i>
-                      {client.appointmentType}
+                      <i className={`fas ${isOnline ? 'fa-video' : 'fa-handshake'}`}></i>
+                      {isOnline ? 'Online Appointment' : client.appointmentType}
                     </div>
                     <p className="text-sm font-semibold text-gray-700">{client.appointmentTime}</p>
                     <p className="text-xs text-gray-400 mt-0.5">

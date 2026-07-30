@@ -1,8 +1,5 @@
 import { useState } from 'react';
-
-// Hardcoded admin credentials — swap for real auth (Firebase/Supabase) later
-const ADMIN_EMAIL = 'admin@smbvisa.com';
-const ADMIN_PASSWORD = 'smb2024';
+import { supabase } from '../lib/supabaseClient';
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -11,19 +8,34 @@ export default function LoginPage({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        onLogin();
-      } else {
-        setError('Invalid email or password. Please try again.');
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) throw authError;
+
+      const { data: adminRow, error: adminError } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      if (adminError) throw adminError;
+
+      if (!adminRow) {
+        await supabase.auth.signOut();
+        setError('This account is not authorized for admin access.');
+        return;
       }
+
+      onLogin();
+    } catch (err) {
+      setError(err.message === 'Invalid login credentials' ? 'Invalid email or password. Please try again.' : err.message);
+    } finally {
       setLoading(false);
-    }, 600); // Small delay to simulate auth check
+    }
   };
 
   return (
