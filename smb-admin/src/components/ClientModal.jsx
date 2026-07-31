@@ -15,9 +15,37 @@ export default function ClientModal({ client, onClose, onSave }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [openingFile, setOpeningFile] = useState('');
   const [previewFile, setPreviewFile] = useState(null); // { url, kind: 'pdf' | 'image', label }
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
 
   useEffect(() => {
     if (client) setSelectedStatus(client.status);
+  }, [client]);
+
+  useEffect(() => {
+    if (!client) return;
+    let cancelled = false;
+
+    const fetchPayments = async () => {
+      setPaymentsLoading(true);
+      const { data } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('assessment_id', client.dbId)
+        .order('created_at', { ascending: false });
+      if (!cancelled) {
+        setPayments(data || []);
+        setPaymentsLoading(false);
+      }
+    };
+    fetchPayments();
+
+    const channel = supabase
+      .channel(`payments-${client.dbId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments', filter: `assessment_id=eq.${client.dbId}` }, fetchPayments)
+      .subscribe();
+
+    return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [client]);
 
   if (!client) return null;
@@ -276,6 +304,36 @@ export default function ClientModal({ client, onClose, onSave }) {
                     </p>
                     <p className="text-xs text-orange-500 mt-1 ml-6">Client will book through the portal</p>
                   </div>
+                )}
+              </div>
+
+              {/* Payments */}
+              <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-emerald-500">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Payments</h3>
+
+                {paymentsLoading ? (
+                  <p className="text-sm text-gray-400"><i className="fas fa-spinner fa-spin mr-2"></i>Loading...</p>
+                ) : payments.length > 0 ? (
+                  <div className="space-y-2 mb-4">
+                    {payments.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">₱{Number(p.amount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                          <p className="text-xs text-gray-500">{p.description}</p>
+                        </div>
+                        <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full capitalize ${
+                          p.status === 'paid' ? 'bg-emerald-100 text-emerald-700'
+                          : p.status === 'processing' ? 'bg-amber-100 text-amber-700'
+                          : p.status === 'failed' || p.status === 'cancelled' ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">No consultation payment yet — this is created automatically when the client tries to book.</p>
                 )}
               </div>
             </div>

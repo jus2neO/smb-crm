@@ -10,7 +10,7 @@ import ApplicantTable from './components/ApplicantTable';
 import ClientModal from './components/ClientModal';
 import ScheduleView from './components/ScheduleView';
 import AnalyticsView from './components/AnalyticsView';
-import { PaymentsView } from './components/PlaceholderViews';
+import PaymentsView from './components/PaymentsView';
 
 function summarizeWork(workHistory) {
   if (!workHistory || workHistory.length === 0) return 'No work experience listed';
@@ -93,6 +93,20 @@ export default function App() {
 
   useEffect(() => {
     if (isLoggedIn) fetchClients();
+  }, [isLoggedIn, fetchClients]);
+
+  // Live updates: refetch whenever any assessment row changes (new
+  // submission, status change, booking, etc.) so the dashboard reflects it
+  // without the admin needing to refresh.
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const channel = supabase
+      .channel('assessments-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assessments' }, () => {
+        fetchClients();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [isLoggedIn, fetchClients]);
 
   // --- Auth ---
