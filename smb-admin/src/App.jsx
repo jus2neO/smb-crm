@@ -27,15 +27,25 @@ function mapAssessmentRow(row) {
     middleName: row.middle_name,
     positionApplied: row.position_applied,
     email: row.email,
+    alternateEmail: row.alternate_email,
     phone: row.phone,
     landline: row.landline,
-    facebook: row.facebook,
+    contactMethod: row.contact_method,
+    contactValue: row.contact_value,
     birthDate: row.birth_date,
     gender: row.gender,
     province: row.province,
     city: row.city_municipality,
     completeAddress: row.complete_address,
+    postalCode: row.postal_code,
+    countryOfResidence: row.country_of_residence,
     civil: row.civil_status,
+    citizenship: row.citizenship,
+    nationality: row.nationality,
+    dependentsCount: row.dependents_count,
+    comment: row.comment,
+    bringDocsInPerson: row.bring_docs_in_person,
+    additionalDocs: row.additional_docs,
     work: summarizeWork(row.work_history),
     resumePath: row.resume_path,
     answers: row.answers,
@@ -65,6 +75,7 @@ export default function App() {
   const [clientsLoading, setClientsLoading] = useState(false);
   const [clientsError, setClientsError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [countryFilter, setCountryFilter] = useState('');
   const [selectedClientId, setSelectedClientId] = useState(null);
 
   const fetchClients = useCallback(async () => {
@@ -127,18 +138,19 @@ export default function App() {
   };
 
   // --- Dashboard filter ---
+  const availableCountries = useMemo(() => {
+    return [...new Set(clients.map((c) => c.country).filter(Boolean))].sort();
+  }, [clients]);
+
   const filteredClients = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    if (!q) return clients;
     return clients.filter((c) => {
       const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
-      return (
-        fullName.includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.id.toLowerCase().includes(q)
-      );
+      const matchesSearch = !q || fullName.includes(q) || c.email.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
+      const matchesCountry = !countryFilter || c.country === countryFilter;
+      return matchesSearch && matchesCountry;
     });
-  }, [clients, searchQuery]);
+  }, [clients, searchQuery, countryFilter]);
 
   const selectedClient = clients.find((c) => c.id === selectedClientId) || null;
 
@@ -206,6 +218,9 @@ export default function App() {
             <ApplicantTable
               clients={filteredClients}
               onViewProfile={setSelectedClientId}
+              countries={availableCountries}
+              countryFilter={countryFilter}
+              onCountryFilterChange={setCountryFilter}
             />
           </div>
         );

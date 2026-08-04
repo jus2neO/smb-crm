@@ -10,7 +10,7 @@ function getScoreColor(score) {
   return score < 60 ? 'text-orange-500 font-bold' : 'text-green-600 font-bold';
 }
 
-export default function ApplicantTable({ clients, onViewProfile }) {
+export default function ApplicantTable({ clients, onViewProfile, countries = [], countryFilter = '', onCountryFilterChange }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
       {/* Table Header */}
@@ -18,9 +18,18 @@ export default function ApplicantTable({ clients, onViewProfile }) {
         <h2 className="text-lg font-bold" style={{ color: 'var(--smb-blue)' }}>
           Recent Assessments
         </h2>
-        <button className="text-sm font-bold hover:underline" style={{ color: 'var(--smb-blue)' }}>
-          <i className="fas fa-filter mr-1"></i> Filter Status
-        </button>
+        <div className="flex items-center gap-2">
+          <i className="fas fa-filter text-sm" style={{ color: 'var(--smb-blue)' }}></i>
+          <select
+            value={countryFilter}
+            onChange={(e) => onCountryFilterChange?.(e.target.value)}
+            className="text-sm font-bold border border-gray-200 rounded-lg px-3 py-1.5 bg-white outline-none focus:border-[#0b1136]"
+            style={{ color: 'var(--smb-blue)' }}
+          >
+            <option value="">All Countries</option>
+            {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
       </div>
 
       {/* Table */}

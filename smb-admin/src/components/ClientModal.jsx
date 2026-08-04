@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+const ADDITIONAL_DOC_LABELS = {
+  passport_copy: 'Passport Copy',
+  tor_copy: 'TOR Copy',
+  diploma_copy: 'Diploma Copy',
+  moi: 'Medium of Instruction (MOI)',
+};
+
 const STATUS_OPTIONS = [
   { value: 'New Applicant', label: 'New Applicant (Pending Review)' },
   { value: 'Consultation Scheduled', label: 'Consultation Scheduled' },
@@ -125,16 +132,23 @@ export default function ClientModal({ client, onClose, onSave }) {
                   <div className="flex items-center gap-3">
                     <i className="fas fa-envelope text-gray-400 w-4"></i>
                     <span className="font-medium text-gray-800">{client.email}</span>
+                    {client.alternateEmail && <span className="text-gray-400">/ {client.alternateEmail}</span>}
                   </div>
                   <div className="flex items-center gap-3">
                     <i className="fas fa-phone text-gray-400 w-4"></i>
                     <span className="font-medium text-gray-800">{client.phone}</span>
                     {client.landline && <span className="text-gray-400">/ {client.landline}</span>}
                   </div>
+                  {client.contactMethod && client.contactValue && (
+                    <div className="flex items-center gap-3">
+                      <i className="fas fa-comment-dots text-gray-400 w-4"></i>
+                      <span className="font-medium text-gray-800">{client.contactMethod}: {client.contactValue}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3">
                     <i className="fas fa-map-marker-alt text-gray-400 w-4"></i>
                     <span className="font-medium text-gray-800">
-                      {client.completeAddress ? `${client.completeAddress}, ` : ''}{client.city}{client.province ? `, ${client.province}` : ''}
+                      {client.completeAddress ? `${client.completeAddress}, ` : ''}{client.city}{client.province ? `, ${client.province}` : ''}{client.postalCode ? ` ${client.postalCode}` : ''}{client.countryOfResidence ? `, ${client.countryOfResidence}` : ''}
                     </span>
                   </div>
                   {client.birthDate && (
@@ -183,6 +197,33 @@ export default function ClientModal({ client, onClose, onSave }) {
                 </div>
               )}
 
+              {/* Additional Requirements */}
+              {(client.bringDocsInPerson || (client.additionalDocs && client.additionalDocs.length > 0)) && (
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Additional Requirements</h3>
+                  {client.bringDocsInPerson ? (
+                    <p className="text-sm text-orange-600 font-medium flex items-center gap-2">
+                      <i className="fas fa-handshake"></i> Client will bring physical copies to their appointment.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {(client.additionalDocs || []).map((d) => (
+                        <button
+                          key={d.path}
+                          onClick={() => handleViewFile(d.path, ADDITIONAL_DOC_LABELS[d.type] || d.type)}
+                          disabled={openingFile === (ADDITIONAL_DOC_LABELS[d.type] || d.type)}
+                          className="flex items-center gap-2 text-sm font-bold border border-gray-200 px-4 py-2 rounded-xl hover:border-[#0b1136] transition disabled:opacity-50"
+                          style={{ color: 'var(--smb-blue)' }}
+                        >
+                          <i className={`fas ${openingFile === (ADDITIONAL_DOC_LABELS[d.type] || d.type) ? 'fa-spinner fa-spin' : 'fa-file-alt'}`}></i>
+                          {ADDITIONAL_DOC_LABELS[d.type] || d.type}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Assessment */}
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Assessment Results</h3>
@@ -202,7 +243,11 @@ export default function ClientModal({ client, onClose, onSave }) {
                   <p className="text-xs font-bold text-gray-600">Background Data:</p>
                   <p className="text-sm"><span className="text-gray-500">Work Exp:</span> <span className="font-medium">{client.work}</span></p>
                   <p className="text-sm"><span className="text-gray-500">Civil Status:</span> <span className="font-medium">{client.civil}</span></p>
+                  {client.citizenship && <p className="text-sm"><span className="text-gray-500">Citizenship:</span> <span className="font-medium">{client.citizenship}</span></p>}
+                  {client.nationality && <p className="text-sm"><span className="text-gray-500">Nationality:</span> <span className="font-medium">{client.nationality}</span></p>}
+                  {client.dependentsCount != null && <p className="text-sm"><span className="text-gray-500">Dependents:</span> <span className="font-medium">{client.dependentsCount}</span></p>}
                   {client.referral && <p className="text-sm"><span className="text-gray-500">Found us via:</span> <span className="font-medium">{client.referral}</span></p>}
+                  {client.comment && <p className="text-sm pt-2 border-t border-gray-100 mt-2"><span className="text-gray-500 block mb-1">Additional Info:</span> <span className="font-medium">{client.comment}</span></p>}
                 </div>
               </div>
 
